@@ -3,43 +3,215 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cursor Camp</title>
+  <title>Cursor Camp - 2D RPG</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      height: 100vh;
-      background-color: #1a1a2e;
-      color: #ffffff;
-      font-family: sans-serif;
-      overflow: hidden;
-      cursor: crosshair;
+      user-select: none;
     }
 
-    /* Style for other players' cursors */
-    .other-player-cursor {
-      position: fixed;
-      width: 16px;
-      height: 16px;
-      background: #ff4757;
-      border: 2px solid #ffffff;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: left 0.05s linear, top 0.05s linear;
-      box-shadow: 0 0 10px rgba(255, 71, 87, 0.8);
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #0b0f19;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Start Screen Modal */
+    #startModal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 15, 25, 0.92);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      width: 340px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .modal-box h1 {
+      color: #f59e0b;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .modal-box p {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 16px;
+      outline: none;
+      text-align: center;
+    }
+
+    .modal-input:focus {
+      border-color: #f59e0b;
+    }
+
+    .hat-select-label {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .hat-options {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .hat-option {
+      flex: 1;
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 4px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+
+    .hat-option.selected {
+      border-color: #f59e0b;
+      color: #fff;
+      background: #334155;
+    }
+
+    .start-btn {
+      width: 100%;
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .start-btn:hover {
+      background: #d97706;
+    }
+
+    /* Game HUD */
+    .hud-top {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(18, 24, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .hud-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #f59e0b;
+    }
+
+    .hud-controls-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #94a3b8;
+      z-index: 10;
+      backdrop-filter: blur(6px);
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
     }
   </style>
 
-  <!-- Load Firebase Libraries -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
+  <!-- Start Modal for Name & Hat Selection -->
+  <div id="startModal">
+    <div class="modal-box">
+      <h1>🔥 Cursor Camp 🔥</h1>
+      <p>Enter your camper details to enter the woods!</p>
+      
+      <input type="text" id="playerNameInput" class="modal-input" placeholder="Your Camper Name" maxlength="12" value="Camper">
+      
+      <div class="hat-select-label">Choose Your Hat:</div>
+      <div class="hat-options">
+        <div class="hat-option selected" onclick="setHat('none', this)">None</div>
+        <div class="hat-option" onclick="setHat('cowboy', this)">🤠 Cowboy</div>
+        <div class="hat-option" onclick="setHat('beanie', this)">🧢 Beanie</div>
+        <div class="hat-option" onclick="setHat('wizard', this)">🧙‍♂️ Wizard</div>
+      </div>
+
+      <button class="start-btn" onclick="startGame()">Enter Campsite</button>
+    </div>
+  </div>
+
+  <!-- HUD Header -->
+  <div class="hud-top">
+    <span>⛺</span>
+    <div>
+      <div class="hud-title">Cursor Camp RPG</div>
+      <div style="font-size: 11px; color: #10b981;" id="activeCampers">1 Camper Online</div>
+    </div>
+  </div>
+
+  <div class="hud-controls-hint">
+    Use <b>WASD</b> or <b>Arrow Keys</b> to walk around • Press <b>E</b> near the campfire logs to Sit/Stand!
+  </div>
+
+  <canvas id="gameCanvas"></canvas>
+
 <script>
-  // Your exact Firebase configuration
+  // Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyACp-ZSaVYaUJEIxGNKTuFSXJkq9RPC0fA",
     authDomain: "cursor-camp-788be.firebaseapp.com",
@@ -51,57 +223,409 @@
     measurementId: "G-YQPWH70W4G"
   };
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
+  try {
+    firebase.initializeApp(firebaseConfig);
+  } catch (e) {}
   const db = firebase.database();
 
-  // Create a unique ID for this player session
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Game Settings & State
+  let gameStarted = false;
+  let playerName = "Camper";
+  let playerHat = "none";
   const playerId = 'player_' + Math.random().toString(36).substr(2, 9);
   const playerRef = db.ref('players/' + playerId);
 
-  // Send mouse position on move
-  window.addEventListener('mousemove', (e) => {
-    playerRef.set({
-      x: e.clientX,
-      y: e.clientY,
-      lastSeen: Date.now()
+  // Local Player Object
+  const myPlayer = {
+    x: window.innerWidth / 2 + 100,
+    y: window.innerHeight / 2 + 50,
+    speed: 3.5,
+    isSitting: false,
+    seatedLogIndex: -1,
+    facing: 'right'
+  };
+
+  const keys = {};
+  window.addEventListener('keydown', (e) => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key.toLowerCase() === 'e' && gameStarted) {
+      toggleSitOnLog();
+    }
+  });
+  window.addEventListener('keyup', (e) => {
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  function setHat(hat, element) {
+    playerHat = hat;
+    document.querySelectorAll('.hat-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+  }
+
+  function startGame() {
+    const nameInput = document.getElementById('playerNameInput').value.trim();
+    if (nameInput) playerName = nameInput;
+    document.getElementById('startModal').style.display = 'none';
+    gameStarted = true;
+  }
+
+  // Campfire & Logs Setup
+  const fireCenter = { x: 0, y: 0 }; // calculated dynamically in loop
+  const logs = [
+    { offsetX: 0, offsetY: -55, angle: 0 },
+    { offsetX: 55, offsetY: 0, angle: Math.PI / 2 },
+    { offsetX: 0, offsetY: 55, angle: Math.PI },
+    { offsetX: -55, offsetY: 0, angle: (3 * Math.PI) / 2 }
+  ];
+
+  // Realistic Forest Trees Map (Pre-generated stable positions)
+  const trees = [];
+  for (let i = 0; i < 35; i++) {
+    trees.push({
+      x: (Math.random() * 1.6 - 0.3) * 2000,
+      y: (Math.random() * 1.6 - 0.3) * 2000,
+      scale: Math.random() * 0.5 + 0.8
+    });
+  }
+
+  // Draw Realistic Pine Tree
+  function drawTree(ctx, x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(0, 25, 20, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Trunk
+    ctx.fillStyle = '#3d2817';
+    ctx.fillRect(-4, 10, 8, 20);
+
+    // Foliage layers
+    ctx.fillStyle = '#064e3b';
+    ctx.beginPath();
+    ctx.moveTo(0, -25);
+    ctx.lineTo(-28, 15);
+    ctx.lineTo(28, 15);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#047857';
+    ctx.beginPath();
+    ctx.moveTo(0, -40);
+    ctx.lineTo(-22, -2);
+    ctx.lineTo(22, -2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.moveTo(0, -55);
+    ctx.lineTo(-15, -15);
+    ctx.lineTo(15, -15);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // Draw Stickman character with hat
+  function drawStickman(ctx, x, y, name, hat, isSitting, facingRight) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, isSitting ? 2 : 22, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (!isSitting) {
+      // Standing stickman
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+
+      // Legs
+      ctx.beginPath();
+      ctx.moveTo(0, 5);
+      ctx.lineTo(-6, 22);
+      ctx.moveTo(0, 5);
+      ctx.lineTo(6, 22);
+      ctx.stroke();
+
+      // Body
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(0, 8);
+      ctx.stroke();
+
+      // Arms
+      ctx.beginPath();
+      ctx.moveTo(0, -4);
+      ctx.lineTo(facingRight ? 10 : -10, 4);
+      ctx.stroke();
+
+      // Head
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, -18, 8, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // Sitting stickman on log
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+
+      // Legs bent sitting
+      ctx.beginPath();
+      ctx.moveTo(0, -2);
+      ctx.lineTo(facingRight ? 8 : -8, 8);
+      ctx.lineTo(facingRight ? 14 : -14, 2);
+      ctx.stroke();
+
+      // Body sitting upright
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(0, 0);
+      ctx.stroke();
+
+      // Arms resting
+      ctx.beginPath();
+      ctx.moveTo(0, -12);
+      ctx.lineTo(facingRight ? 8 : -8, -4);
+      ctx.stroke();
+
+      // Head
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, -26, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Hats Renderer
+    const headY = isSitting ? -26 : -18;
+    if (hat === 'cowboy') {
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath();
+      ctx.ellipse(0, headY - 8, 14, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(-7, headY - 16, 14, 9);
+    } else if (hat === 'beanie') {
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(0, headY - 7, 8, Math.PI, 0, false);
+      ctx.fill();
+    } else if (hat === 'wizard') {
+      ctx.fillStyle = '#8b5cf6';
+      ctx.beginPath();
+      ctx.moveTo(0, headY - 24);
+      ctx.lineTo(-10, headY - 6);
+      ctx.lineTo(10, headY - 6);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Name Tag
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    
+    const textWidth = ctx.measureText(name).width;
+    ctx.beginPath();
+    ctx.roundRect(-textWidth / 2 - 6, isSitting ? -46 : -38, textWidth + 12, 18, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText(name, 0, isSitting ? -33 : -25);
+
+    ctx.restore();
+  }
+
+  // Sit/Stand toggle logic near logs
+  function toggleSitOnLog() {
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    if (myPlayer.isSitting) {
+      // Stand up
+      myPlayer.isSitting = false;
+      myPlayer.y += 20;
+      myPlayer.seatedLogIndex = -1;
+    } else {
+      // Check proximity to any of the 4 logs
+      logs.forEach((log, index) => {
+        const logWorldX = cx + log.offsetX;
+        const logWorldY = cy + log.offsetY;
+        const dist = Math.hypot(myPlayer.x - logWorldX, myPlayer.y - logWorldY);
+        if (dist < 35) {
+          myPlayer.isSitting = true;
+          myPlayer.x = logWorldX;
+          myPlayer.y = logWorldY - 5;
+          myPlayer.seatedLogIndex = index;
+        }
+      });
+    }
+  }
+
+  // Remote Players Sync
+  const remotePlayers = {};
+  db.ref('players').on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    const count = Object.keys(data).length;
+    document.getElementById('activeCampers').innerText = count + (count === 1 ? ' Camper Online' : ' Campers Online');
+
+    Object.keys(data).forEach(id => {
+      if (id === playerId) return;
+      remotePlayers[id] = data[id];
+    });
+    Object.keys(remotePlayers).forEach(id => {
+      if (!data[id]) delete remotePlayers[id];
     });
   });
 
-  // Automatically delete cursor when player closes the tab/leaves
   playerRef.onDisconnect().remove();
 
-  // Listen for other players moving
-  const otherCursors = {};
-  db.ref('players').on('value', (snapshot) => {
-    const players = snapshot.val() || {};
+  // Main Game Loop
+  let fireAnim = 0;
+  function gameLoop() {
+    fireAnim += 0.08;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    Object.keys(players).forEach((id) => {
-      if (id === playerId) return; // Ignore local player
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
 
-      let el = otherCursors[id];
-      if (!el) {
-        // Spawn cursor for new player
-        el = document.createElement('div');
-        el.className = 'other-player-cursor';
-        document.body.appendChild(el);
-        otherCursors[id] = el;
-      }
+    // Handle movement if not sitting
+    if (gameStarted && !myPlayer.isSitting) {
+      let moved = false;
+      if (keys['w'] || keys['arrowup']) { myPlayer.y -= myPlayer.speed; moved = true; }
+      if (keys['s'] || keys['arrowdown']) { myPlayer.y += myPlayer.speed; moved = true; }
+      if (keys['a'] || keys['arrowleft']) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; moved = true; }
+      if (keys['d'] || keys['arrowright']) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; moved = true; }
 
-      // Update cursor position
-      el.style.left = players[id].x + 'px';
-      el.style.top = players[id].y + 'px';
+      // Sync position to Firebase
+      playerRef.set({
+        x: myPlayer.x,
+        y: myPlayer.y,
+        name: playerName,
+        hat: playerHat,
+        isSitting: myPlayer.isSitting,
+        facing: myPlayer.facing,
+        lastSeen: Date.now()
+      }).catch(e => {});
+    }
+
+    // Camera offset to center around player
+    const camX = cx - myPlayer.x;
+    const camY = cy - myPlayer.y;
+
+    ctx.save();
+    ctx.translate(camX, camY);
+
+    // Draw Forest Trees
+    trees.forEach(t => {
+      drawTree(ctx, t.x + cx, t.y + cy, t.scale);
     });
 
-    // Remove cursors of players who disconnected
-    Object.keys(otherCursors).forEach((id) => {
-      if (!players[id]) {
-        otherCursors[id].remove();
-        delete otherCursors[id];
-      }
+    // Draw Tents
+    drawTentStatic(ctx, cx - 180, cy - 40, '#0284c7'); // Blue Tent
+    drawTentStatic(ctx, cx + 180, cy - 40, '#e11d48'); // Pink Tent
+
+    // Draw Campfire Logs Ring
+    logs.forEach(log => {
+      ctx.save();
+      ctx.translate(cx + log.offsetX, cy + log.offsetY);
+      ctx.rotate(log.angle);
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-30, -10, 60, 20, 6);
+      else ctx.rect(-30, -10, 60, 20);
+      ctx.fill();
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
     });
-  });
+
+    // Draw Central Campfire & Fire Glow
+    const fireX = cx;
+    const fireY = cy;
+
+    const glow = ctx.createRadialGradient(fireX, fireY, 5, fireX, fireY, 80);
+    glow.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
+    glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(fireX, fireY, 80, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Animated Fire Flames
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.arc(fireX, fireY, 14 + Math.sin(fireAnim * 2) * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(fireX, fireY, 8 + Math.cos(fireAnim * 3) * 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(fireX, fireY, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw Remote Players
+    Object.keys(remotePlayers).forEach(id => {
+      const p = remotePlayers[id];
+      drawStickman(ctx, p.x, p.y, p.name || 'Camper', p.hat || 'none', p.isSitting, p.facing === 'right');
+    });
+
+    // Draw Local Player
+    drawStickman(ctx, myPlayer.x, myPlayer.y, playerName, playerHat, myPlayer.isSitting, myPlayer.facing === 'right');
+
+    ctx.restore();
+    requestAnimationFrame(gameLoop);
+  }
+
+  function drawTentStatic(ctx, x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -30);
+    ctx.lineTo(-35, 25);
+    ctx.lineTo(35, 25);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.moveTo(0, -8);
+    ctx.lineTo(-12, 25);
+    ctx.lineTo(12, 25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  gameLoop();
 </script>
-
 </body>
 </html>
