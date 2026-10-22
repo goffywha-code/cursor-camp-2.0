@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cursor Camp - 2D RPG & Cozy Cabin</title>
+  <title>Cursor Camp - 2D RPG</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
     }
 
     body {
@@ -16,9 +17,8 @@
       height: 100vh;
       background-color: #0b0f19;
       color: #ffffff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: sans-serif;
       overflow: hidden;
-      user-select: none;
     }
 
     /* Start Screen Modal */
@@ -34,30 +34,35 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
-      pointer-events: auto;
+    }
+
+    #startModal.hidden {
+      display: none !important;
+      pointer-events: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
     }
 
     .modal-box {
       background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 32px;
+      padding: 30px;
       border-radius: 16px;
       text-align: center;
-      width: 360px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      width: 340px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     }
 
     .modal-box h1 {
       color: #f59e0b;
-      font-size: 28px;
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
+      font-size: 26px;
+      margin-bottom: 8px;
     }
 
     .modal-box p {
       color: #94a3b8;
       font-size: 13px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .modal-input {
@@ -68,12 +73,8 @@
       border-radius: 8px;
       color: #fff;
       font-size: 15px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       text-align: center;
-      outline: none;
-    }
-    .modal-input:focus {
-      border-color: #f59e0b;
     }
 
     .hat-select-label {
@@ -81,13 +82,12 @@
       color: #cbd5e1;
       margin-bottom: 8px;
       text-align: left;
-      font-weight: 600;
     }
 
     .hat-options {
       display: flex;
-      gap: 8px;
-      margin-bottom: 22px;
+      gap: 6px;
+      margin-bottom: 20px;
     }
 
     .hat-btn {
@@ -95,11 +95,10 @@
       background: #0f172a;
       border: 2px solid #334155;
       border-radius: 8px;
-      padding: 8px 2px;
+      padding: 8px 4px;
       font-size: 11px;
       cursor: pointer;
       color: #94a3b8;
-      transition: all 0.2s;
     }
 
     .hat-btn.selected {
@@ -118,24 +117,22 @@
       font-weight: bold;
       font-size: 16px;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
     .start-btn:hover {
       background: #d97706;
     }
 
-    /* HUD Header */
+    /* HUD */
     .hud-top {
       position: absolute;
       top: 16px;
       left: 16px;
-      background: rgba(18, 24, 38, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(18, 24, 38, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      padding: 10px 18px;
+      padding: 10px 16px;
       z-index: 10;
-      backdrop-filter: blur(4px);
     }
 
     .hud-controls-hint {
@@ -143,16 +140,13 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 10px 22px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
       border-radius: 20px;
       font-size: 13px;
       color: #cbd5e1;
       z-index: 10;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      pointer-events: none;
     }
 
     #gameCanvas {
@@ -168,11 +162,11 @@
 </head>
 <body>
 
-  <!-- Start Screen -->
+  <!-- Start Screen Modal -->
   <div id="startModal">
     <div class="modal-box">
-      <h1>⛺ Cursor Camp 🌲</h1>
-      <p>Explore the campsite & cozy cabin lounge!</p>
+      <h1>🔥 Cursor Camp 🔥</h1>
+      <p>Type your name and pick a hat to join!</p>
       
       <input type="text" id="playerNameInput" class="modal-input" placeholder="Your Name" maxlength="12" value="Camper">
       
@@ -184,25 +178,23 @@
         <button class="hat-btn" onclick="pickHat('wizard', this)">🧙‍♂️ Wizard</button>
       </div>
 
-      <button class="start-btn" onclick="enterGame()">Enter Campsite</button>
+      <button class="start-btn" id="enterBtn" onclick="enterGame()">Enter Campsite</button>
     </div>
   </div>
 
   <!-- HUD Header -->
   <div class="hud-top">
-    <div style="font-weight: bold; color: #f59e0b; font-size: 15px;">⛺ Cursor Camp & Cabin</div>
+    <div style="font-weight: bold; color: #f59e0b; font-size: 15px;">⛺ Cursor Camp RPG</div>
     <div style="font-size: 12px; color: #10b981;" id="activeCampers">1 Camper Active</div>
-    <div style="font-size: 11px; color: #94a3b8; margin-top:2px;" id="locationStatus">Location: Campsite (Outside)</div>
   </div>
 
-  <div class="hud-controls-hint" id="actionHint">
-    Walk: <b>WASD</b> / <b>Arrows</b> | Interact / Sit / Enter Door: Press <b>E</b>
+  <div class="hud-controls-hint">
+    Walk: <b>WASD</b> or <b>Arrow Keys</b> | Sit/Enter Cabin: Press <b>E</b>
   </div>
 
   <canvas id="gameCanvas"></canvas>
 
 <script>
-  // Firebase Safe Initialization
   let db = null;
   const firebaseConfig = {
     apiKey: "AIzaSyACp-ZSaVYaUJEIxGNKTuFSXJkq9RPC0fA",
@@ -211,14 +203,15 @@
     projectId: "cursor-camp-788be",
     storageBucket: "cursor-camp-788be.firebasestorage.app",
     messagingSenderId: "840054967773",
-    appId: "1:840054967773:web:67a52ff630cc2ab3687a34"
+    appId: "1:840054967773:web:67a52ff630cc2ab3687a34",
+    measurementId: "G-YQPWH70W4G"
   };
 
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
   } catch (e) {
-    console.log("Running in local single-player / offline mode");
+    console.log("Offline mode");
   }
 
   const canvas = document.getElementById('gameCanvas');
@@ -234,6 +227,7 @@
   let gameStarted = false;
   let playerName = "Camper";
   let playerHat = "none";
+  let inCabin = false;
   const playerId = 'player_' + Math.random().toString(36).substr(2, 9);
   let playerRef = null;
 
@@ -242,14 +236,12 @@
     playerRef.onDisconnect().remove();
   }
 
-  // Player State
   const myPlayer = {
-    x: 0,
-    y: 120, // Start outside in front of cabin
+    x: window.innerWidth / 2 + 100,
+    y: window.innerHeight / 2 + 50,
     speed: 4,
     isSitting: false,
-    facing: 'right',
-    location: 'outside' // 'outside' or 'inside'
+    facing: 'right'
   };
 
   function pickHat(hatName, btnElement) {
@@ -262,7 +254,11 @@
     const nameVal = document.getElementById('playerNameInput').value.trim();
     if (nameVal) playerName = nameVal;
     
-    document.getElementById('startModal').style.display = 'none';
+    // Explicitly hide modal and disable pointer events
+    const modal = document.getElementById('startModal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    modal.style.pointerEvents = 'none';
     gameStarted = true;
   }
 
@@ -270,108 +266,77 @@
     if (e.key === 'Enter') enterGame();
   });
 
-  // Campsite Elements
   const logs = [
-    { offsetX: 0, offsetY: 220 - 55, angle: 0 },
-    { offsetX: 55, offsetY: 220, angle: Math.PI / 2 },
-    { offsetX: 0, offsetY: 220 + 55, angle: Math.PI },
-    { offsetX: -55, offsetY: 220, angle: (3 * Math.PI) / 2 }
+    { offsetX: 0, offsetY: -55, angle: 0 },
+    { offsetX: 55, offsetY: 0, angle: Math.PI / 2 },
+    { offsetX: 0, offsetY: 55, angle: Math.PI },
+    { offsetX: -55, offsetY: 0, angle: (3 * Math.PI) / 2 }
   ];
 
   const trees = [];
-  for (let i = 0; i < 35; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 280 + Math.random() * 600;
+  for (let i = 0; i < 30; i++) {
     trees.push({
-      x: Math.cos(angle) * dist,
-      y: Math.sin(angle) * dist + 100,
+      x: (Math.random() * 1.6 - 0.3) * 2000,
+      y: (Math.random() * 1.6 - 0.3) * 2000,
       scale: Math.random() * 0.4 + 0.8
     });
   }
-
-  // Cabin Furniture Interaction Spots Inside
-  const cabinSeats = [
-    { id: 'yellowCouch', x: -220, y: 50, label: 'Yellow Couch' },
-    { id: 'orangeChair', x: 100, y: 70, label: 'Orange Armchair' },
-    { id: 'greenChair', x: 80, y: 150, label: 'Green Armchair' }
-  ];
 
   const keys = {};
   window.addEventListener('keydown', (e) => {
     keys[e.key.toLowerCase()] = true;
     if (e.key.toLowerCase() === 'e' && gameStarted) {
-      handleInteraction();
+      handleInteract();
     }
   });
   window.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
   });
 
-  function handleInteraction() {
-    if (myPlayer.location === 'outside') {
-      // Check Cabin Entrance Door
-      const distToDoor = Math.hypot(myPlayer.x - 0, myPlayer.y - (-80));
-      if (distToDoor < 50) {
-        // Enter Cabin
-        myPlayer.location = 'inside';
-        myPlayer.x = 0;
-        myPlayer.y = 170; // Inside near double doors
-        myPlayer.isSitting = false;
-        document.getElementById('locationStatus').innerText = "Location: Cabin Lounge (Inside)";
+  function handleInteract() {
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    if (!inCabin) {
+      const cabinDoorX = cx + 200;
+      const cabinDoorY = cy - 120;
+      if (Math.hypot(myPlayer.x - cabinDoorX, myPlayer.y - cabinDoorY) < 60) {
+        inCabin = true;
+        myPlayer.x = cx;
+        myPlayer.y = cy + 180;
         return;
       }
 
-      // Check Sitting on Outside Campfire Logs
       if (myPlayer.isSitting) {
         myPlayer.isSitting = false;
         myPlayer.y += 25;
       } else {
         logs.forEach((log) => {
-          const dist = Math.hypot(myPlayer.x - log.offsetX, myPlayer.y - log.offsetY);
-          if (dist < 45) {
+          const lx = cx + log.offsetX;
+          const ly = cy + log.offsetY;
+          if (Math.hypot(myPlayer.x - lx, myPlayer.y - ly) < 45) {
             myPlayer.isSitting = true;
-            myPlayer.x = log.offsetX;
-            myPlayer.y = log.offsetY - 4;
+            myPlayer.x = lx;
+            myPlayer.y = ly - 4;
           }
         });
       }
-    } else if (myPlayer.location === 'inside') {
-      // Check Exit Door inside
-      const distToExit = Math.hypot(myPlayer.x - 0, myPlayer.y - 180);
-      if (distToExit < 50 && !myPlayer.isSitting) {
-        // Exit Cabin
-        myPlayer.location = 'outside';
-        myPlayer.x = 0;
-        myPlayer.y = -60; // Outside door
-        document.getElementById('locationStatus').innerText = "Location: Campsite (Outside)";
-        return;
-      }
-
-      // Toggle Sitting on Cabin Chairs
-      if (myPlayer.isSitting) {
-        myPlayer.isSitting = false;
-        myPlayer.y += 20;
-      } else {
-        cabinSeats.forEach(seat => {
-          const dist = Math.hypot(myPlayer.x - seat.x, myPlayer.y - seat.y);
-          if (dist < 50) {
-            myPlayer.isSitting = true;
-            myPlayer.x = seat.x;
-            myPlayer.y = seat.y - 5;
-          }
-        });
+    } else {
+      if (myPlayer.y > cy + 200) {
+        inCabin = false;
+        myPlayer.x = cx + 200;
+        myPlayer.y = cy - 90;
       }
     }
   }
 
-  // Draw Outdoor Tree
   function drawTree(ctx, x, y, scale) {
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
 
     ctx.fillStyle = '#3d2817';
-    ctx.fillRect(-5, 10, 10, 22);
+    ctx.fillRect(-4, 10, 8, 20);
 
     ctx.fillStyle = '#064e3b';
     ctx.beginPath();
@@ -382,14 +347,14 @@
 
     ctx.fillStyle = '#047857';
     ctx.beginPath();
-    ctx.moveTo(0, -42);
+    ctx.moveTo(0, -40);
     ctx.lineTo(-22, -2);
     ctx.lineTo(22, -2);
     ctx.fill();
 
     ctx.fillStyle = '#10b981';
     ctx.beginPath();
-    ctx.moveTo(0, -58);
+    ctx.moveTo(0, -55);
     ctx.lineTo(-15, -15);
     ctx.lineTo(15, -15);
     ctx.fill();
@@ -397,469 +362,238 @@
     ctx.restore();
   }
 
-  // Draw Cabin Exterior Outside
-  function drawCabinExterior(ctx) {
-    ctx.save();
-    ctx.translate(0, -160);
+  // Exact detailed cabin interior render function
+  function drawCabinInteriorDetailed(ctx, cx, cy) {
+    const w = 900;
+    const h = 580;
+    const x = cx - w / 2;
+    const y = cy - h / 2;
 
-    // Main Log Walls
-    ctx.fillStyle = '#4a2c11';
-    ctx.fillRect(-140, -60, 280, 120);
+    // Teal Back Wall
+    ctx.fillStyle = '#126161';
+    ctx.fillRect(x, y, w, h);
 
-    // Roof Triangle
-    ctx.fillStyle = '#2d1808';
+    // Vaulted Dark Wooden Roof Rafters
+    ctx.fillStyle = '#3d1c16';
     ctx.beginPath();
-    ctx.moveTo(0, -120);
-    ctx.lineTo(-160, -55);
-    ctx.lineTo(160, -55);
-    ctx.fill();
-
-    // Roof overhang line
-    ctx.strokeStyle = '#633812';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(0, -120);
-    ctx.lineTo(-165, -53);
-    ctx.moveTo(0, -120);
-    ctx.lineTo(165, -53);
-    ctx.stroke();
-
-    // Windows
-    ctx.fillStyle = '#fef08a';
-    ctx.strokeStyle = '#2d1808';
-    ctx.lineWidth = 3;
-    
-    // Left Window
-    ctx.fillRect(-100, -30, 40, 40);
-    ctx.strokeRect(-100, -30, 40, 40);
-    
-    // Right Window
-    ctx.fillRect(60, -30, 40, 40);
-    ctx.strokeRect(60, -30, 40, 40);
-
-    // Front Door
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(-22, 10, 44, 50);
-    ctx.strokeStyle = '#b45309';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(-22, 10, 44, 50);
-
-    // Door knob
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.arc(-14, 36, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Entrance Sign
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(-45, -45, 90, 20);
-    ctx.strokeStyle = '#451a03';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-45, -45, 90, 20);
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('COZY CABIN', 0, -31);
-
-    // Interaction Prompt
-    const distToDoor = Math.hypot(myPlayer.x - 0, myPlayer.y - (-80));
-    if (distToDoor < 60 && myPlayer.location === 'outside') {
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(-50, -75, 100, 22);
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('Press [E] Enter', 0, -60);
-    }
-
-    ctx.restore();
-  }
-
-  // Draw Cabin Interior (Matching Reference Image)
-  function drawCabinInterior(ctx) {
-    ctx.save();
-    // Center of Cabin Interior Room
-    const w = 760;
-    const h = 480;
-
-    // Room Outer Frame Boundary
-    ctx.fillStyle = '#0b0f19';
-    ctx.fillRect(-w/2 - 50, -h/2 - 50, w + 100, h + 100);
-
-    // Teal Walls Background
-    ctx.fillStyle = '#1b6b68';
-    ctx.fillRect(-w/2, -h/2, w, h);
-
-    // Wooden Floor (Planks)
-    ctx.fillStyle = '#d99b5d';
-    ctx.fillRect(-w/2, -60, w, h/2 + 60);
-
-    // Wooden Plank Lines
-    ctx.strokeStyle = '#b3783e';
-    ctx.lineWidth = 1.5;
-    for (let py = -60; py <= h/2; py += 30) {
-      ctx.beginPath();
-      ctx.moveTo(-w/2, py);
-      ctx.lineTo(w/2, py);
-      ctx.stroke();
-    }
-
-    // Wall Baseboard / Trim
-    ctx.fillStyle = '#401818';
-    ctx.fillRect(-w/2, -70, w, 12);
-
-    // --- VAULTED WOODEN CEILING RAFTERS ---
-    ctx.fillStyle = '#3a1b18';
-    ctx.beginPath();
-    ctx.moveTo(-w/2, -70);
-    ctx.lineTo(0, -h/2 - 10);
-    ctx.lineTo(w/2, -70);
-    ctx.lineTo(w/2, -h/2);
-    ctx.lineTo(-w/2, -h/2);
-    ctx.fill();
-
-    // Rafter Beams
-    ctx.strokeStyle = '#24100e';
-    ctx.lineWidth = 8;
-    for (let rx = -w/2 + 60; rx <= w/2 - 60; rx += 80) {
-      ctx.beginPath();
-      ctx.moveTo(rx, -70);
-      ctx.lineTo(0, -h/2 - 10);
-      ctx.stroke();
-    }
-
-    // --- BACK WINDOW WALL & BOOKSHELVES ---
-    // Large Grid Window Frame
-    ctx.fillStyle = '#143836';
-    ctx.fillRect(-180, -210, 360, 140);
-    ctx.fillStyle = '#87ceeb'; // Light sky blue window pane color
-    ctx.fillRect(-172, -202, 344, 124);
-
-    // Window Grids & Double Doors
-    ctx.strokeStyle = '#143836';
-    ctx.lineWidth = 4;
-    for (let wx = -172; wx <= 172; wx += 43) {
-      ctx.beginPath();
-      ctx.moveTo(wx, -202);
-      ctx.lineTo(wx, -78);
-      ctx.stroke();
-    }
-    for (let wy = -202; wy <= -78; wy += 31) {
-      ctx.beginPath();
-      ctx.moveTo(-172, wy);
-      ctx.lineTo(172, wy);
-      ctx.stroke();
-    }
-
-    // High Bookshelves along windows
-    ctx.fillStyle = '#5c2a18';
-    ctx.fillRect(-185, -135, 370, 14); // Shelf
-    // Books
-    const bookColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-    for (let bx = -175; bx < 170; bx += 12) {
-      if (Math.abs(bx) < 30) continue; // Door opening gap
-      ctx.fillStyle = bookColors[Math.abs(bx) % bookColors.length];
-      ctx.fillRect(bx, -155, 9, 20);
-    }
-
-    // Double Doors in Center Back Window
-    ctx.strokeStyle = '#0f2928';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(-40, -135, 80, 65);
-    ctx.beginPath();
-    ctx.moveTo(0, -135);
-    ctx.lineTo(0, -70);
-    ctx.stroke();
-
-    // --- CIRCULAR RING CHANDELIER ---
-    ctx.strokeStyle = '#332918';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, -h/2 - 10);
-    ctx.lineTo(0, -170);
-    ctx.stroke();
-
-    // Ring
-    ctx.strokeStyle = '#b45309';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.ellipse(0, -170, 50, 14, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Glowing Bulbs on Chandelier
-    ctx.fillStyle = '#fef08a';
-    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-      const bx = Math.cos(angle) * 50;
-      const by = -170 + Math.sin(angle) * 14;
-      ctx.beginPath();
-      ctx.arc(bx, by, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // --- LEFT WALL DECORATIONS ---
-    // Framed Giant Orange Fish Art
-    ctx.fillStyle = '#d97706'; // Gold Frame
-    ctx.fillRect(-340, -190, 110, 85);
-    ctx.fillStyle = '#fef3c7'; // Canvas
-    ctx.fillRect(-333, -183, 96, 71);
-    
-    // Fish Graphic
-    ctx.fillStyle = '#f97316';
-    ctx.beginPath();
-    ctx.ellipse(-285, -148, 28, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Tail
-    ctx.beginPath();
-    ctx.moveTo(-260, -148);
-    ctx.lineTo(-248, -162);
-    ctx.lineTo(-248, -134);
+    ctx.moveTo(x, y);
+    ctx.lineTo(cx, y - 80);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w, y + 90);
+    ctx.lineTo(cx, y + 10);
+    ctx.lineTo(x, y + 90);
     ctx.closePath();
     ctx.fill();
 
-    // Wall Pennants/Banners
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.moveTo(-365, -180);
-    ctx.lineTo(-345, -180);
-    ctx.lineTo(-355, -130);
-    ctx.fill();
-
-    // Grandfather Clock Left
-    ctx.fillStyle = '#451a03';
-    ctx.fillRect(-195, -70, 24, 75);
-    ctx.fillStyle = '#fef08a';
-    ctx.beginPath();
-    ctx.arc(-183, -55, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Tall Cabinet / Glass Case Left Wall
-    ctx.fillStyle = '#3a1b18';
-    ctx.fillRect(-365, -60, 42, 100);
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(-360, -55, 32, 40);
-
-    // --- RIGHT WALL FIREPLACE & DECOR ---
-    // Stone Fireplace Structure
-    ctx.fillStyle = '#78716c';
-    ctx.fillRect(250, -110, 100, 130);
-    ctx.fillStyle = '#44403c'; // Fireplace Cavity
-    ctx.fillRect(270, -40, 60, 60);
-
-    // Chimney Hood Vent extending up
-    ctx.fillStyle = '#d6d3d1';
-    ctx.beginPath();
-    ctx.moveTo(260, -110);
-    ctx.lineTo(280, -220);
-    ctx.lineTo(320, -220);
-    ctx.lineTo(340, -110);
-    ctx.fill();
-
-    // Animated Fire in Fireplace
-    ctx.fillStyle = '#f97316';
-    ctx.beginPath();
-    ctx.arc(300, 10, 14 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#fef08a';
-    ctx.beginPath();
-    ctx.arc(300, 8, 8 + Math.sin(Date.now() * 0.01) * 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Framed pictures right wall
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(260, -170, 25, 32);
-    ctx.fillRect(300, -180, 30, 40);
-
-    // Potted Green Plant
-    ctx.fillStyle = '#991b1b'; // Red Pot
-    ctx.fillRect(205, -20, 22, 22);
-    ctx.fillStyle = '#15803d'; // Leaves
-    ctx.beginPath();
-    ctx.arc(216, -28, 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    // --- RUGS & FURNITURE (MATCHING IMAGE) ---
-    // Left Runner Patterned Rug
-    ctx.fillStyle = '#c2410c';
-    ctx.fillRect(-310, 70, 180, 110);
-    ctx.strokeStyle = '#fef08a';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(-302, 78, 164, 94);
-
-    // Coffee Table on Runner Rug
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(-270, 105, 100, 40);
-    ctx.fillStyle = '#e2e8f0'; // Bowl/plate on table
-    ctx.beginPath();
-    ctx.arc(-220, 125, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // YELLOW COUCH (Left)
-    ctx.fillStyle = '#ca8a04';
-    // Backrest
-    ctx.fillRect(-280, 15, 120, 30);
-    // Cushions
-    ctx.fillRect(-275, 40, 110, 35);
-    // Armrests
-    ctx.fillStyle = '#a16207';
-    ctx.fillRect(-285, 25, 15, 45);
-    ctx.fillRect(-170, 25, 15, 45);
-    // Striped Red Pillow
-    ctx.fillStyle = '#dc2626';
-    ctx.fillRect(-265, 30, 20, 20);
-
-    // BLACK CAT ON YELLOW COUCH 🐱
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath();
-    ctx.arc(-210, 45, 9, 0, Math.PI * 2); // Body
-    ctx.arc(-198, 42, 6, 0, Math.PI * 2); // Head
-    ctx.fill();
-    // Cat ears
-    ctx.beginPath();
-    ctx.moveTo(-201, 37); ctx.lineTo(-198, 32); ctx.lineTo(-195, 37);
-    ctx.fill();
-
-    // CIRCULAR GREY RUG (Center Right)
-    ctx.fillStyle = '#94a3b8';
-    ctx.beginPath();
-    ctx.ellipse(100, 130, 110, 70, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#cbd5e1';
-    ctx.beginPath();
-    ctx.ellipse(100, 130, 95, 58, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ORANGE ARMCHAIR
-    ctx.fillStyle = '#ea580c';
-    ctx.fillRect(80, 40, 50, 45); // Cushion
-    ctx.fillRect(75, 25, 60, 20); // Back
-    ctx.fillStyle = '#c2410c';
-    ctx.fillRect(70, 35, 12, 45); // Arm left
-    ctx.fillRect(128, 35, 12, 45); // Arm right
-
-    // GREEN ARMCHAIR
-    ctx.fillStyle = '#15803d';
-    ctx.fillRect(60, 135, 48, 40); // Cushion
-    ctx.fillRect(55, 120, 58, 20); // Back
-    ctx.fillStyle = '#166534';
-    ctx.fillRect(50, 130, 12, 40);
-    ctx.fillRect(106, 130, 12, 40);
-
-    // Small Side Table between chairs
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(150, 110, 45, 35);
-    ctx.fillStyle = '#fef08a'; // Teapot/Cup
-    ctx.fillRect(165, 120, 12, 12);
-
-    // DOORWAY EXIT PROMPT
-    const distToExit = Math.hypot(myPlayer.x - 0, myPlayer.y - 180);
-    if (distToExit < 60) {
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(-60, 200, 120, 22);
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Press [E] Exit Outside', 0, 215);
+    // Rafter beams
+    ctx.strokeStyle = '#27100b';
+    ctx.lineWidth = 6;
+    for (let i = 0; i < 6; i++) {
+      const bx = x + (w / 5) * i;
+      ctx.beginPath();
+      ctx.moveTo(bx, y + 90);
+      ctx.lineTo(cx, y - 80);
+      ctx.stroke();
     }
 
-    ctx.restore();
+    // Wooden Plank Floor
+    ctx.fillStyle = '#e69a53';
+    ctx.fillRect(x, y + 330, w, h - 330);
+
+    ctx.strokeStyle = '#c87c35';
+    ctx.lineWidth = 2;
+    for (let fy = y + 360; fy < y + h; fy += 30) {
+      ctx.beginPath();
+      ctx.moveTo(x, fy);
+      ctx.lineTo(x + w, fy);
+      ctx.stroke();
+    }
+
+    // Grid Windows across back wall
+    const winX = cx - 280;
+    const winY = y + 120;
+    const winW = 560;
+    const winH = 180;
+
+    ctx.fillStyle = '#94d2bd';
+    ctx.fillRect(winX, winY, winW, winH);
+
+    ctx.strokeStyle = '#1e3838';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(winX, winY, winW, winH);
+
+    // Window Grids & Bookshelves
+    ctx.lineWidth = 3;
+    for (let wx = winX + 70; wx < winX + winW; wx += 70) {
+      ctx.beginPath(); ctx.moveTo(wx, winY); ctx.lineTo(wx, winY + winH); ctx.stroke();
+    }
+    for (let wy = winY + 45; wy < winY + winH; wy += 45) {
+      ctx.beginPath(); ctx.moveTo(winX, wy); ctx.lineTo(winX + winW, wy); ctx.stroke();
+    }
+
+    // Books on Window Ledge
+    ctx.fillStyle = '#b93817'; ctx.fillRect(winX + 10, winY + 140, 45, 35);
+    ctx.fillStyle = '#115e59'; ctx.fillRect(winX + 60, winY + 145, 30, 30);
+    ctx.fillStyle = '#d97706'; ctx.fillRect(winX + 410, winY + 135, 55, 40);
+
+    // Yellow Couch with Cat (Left)
+    const couchX = x + 70;
+    const couchY = y + 350;
+    ctx.fillStyle = '#d4ac0d';
+    ctx.fillRect(couchX, couchY, 210, 95);
+    ctx.fillStyle = '#b7950b';
+    ctx.fillRect(couchX + 15, couchY - 30, 180, 40);
+    ctx.fillRect(couchX - 10, couchY + 10, 25, 75);
+    ctx.fillRect(couchX + 195, couchY + 10, 25, 75);
+
+    // Pillows
+    ctx.fillStyle = '#b93817';
+    ctx.fillRect(couchX + 25, couchY + 15, 35, 35);
+
+    // Sleeping Black Cat on Couch
+    ctx.fillStyle = '#111111';
+    ctx.beginPath();
+    ctx.ellipse(couchX + 120, couchY + 30, 22, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(couchX + 100, couchY + 26, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Coffee Table & Patterned Orange Rug
+    ctx.fillStyle = '#b93817';
+    ctx.fillRect(couchX + 25, couchY + 100, 200, 75);
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(couchX + 35, couchY + 110, 180, 55);
+
+    ctx.fillStyle = '#22252a';
+    ctx.fillRect(couchX + 70, couchY + 115, 110, 45);
+
+    // Framed Fish Art on Left Wall
+    ctx.fillStyle = '#b7950b';
+    ctx.fillRect(x + 80, y + 120, 130, 120);
+    ctx.fillStyle = '#fef08a';
+    ctx.fillRect(x + 92, y + 132, 106, 96);
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.ellipse(x + 145, y + 180, 32, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 165, y + 180);
+    ctx.lineTo(x + 185, y + 165);
+    ctx.lineTo(x + 185, y + 195);
+    ctx.closePath();
+    ctx.fill();
+
+    // Grandfather Clock
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(cx - 150, y + 210, 35, 120);
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(cx - 132, y + 230, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Round Grey Rug with Armchairs (Right Side)
+    const rigX = cx + 80;
+    const rigY = y + 360;
+    ctx.fillStyle = '#a3a3a3';
+    ctx.beginPath();
+    ctx.ellipse(rigX + 70, rigY + 60, 160, 90, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Orange Armchair
+    ctx.fillStyle = '#ea580c';
+    ctx.fillRect(rigX + 40, rigY - 20, 95, 80);
+    ctx.fillStyle = '#c2410c';
+    ctx.fillRect(rigX + 50, rigY - 45, 75, 30);
+
+    // Green Armchair
+    ctx.fillStyle = '#15803d';
+    ctx.fillRect(rigX - 30, rigY + 50, 85, 70);
+
+    // Small Tea Table
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(rigX + 110, rigY + 60, 70, 45);
+    ctx.fillStyle = '#111827'; ctx.beginPath(); ctx.arc(rigX + 135, rigY + 78, 8, 0, Math.PI * 2); ctx.fill();
+
+    // Stone Fireplace & Chimney (Right Wall)
+    const fpX = x + w - 140;
+    const fpY = y + 150;
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(fpX, fpY + 120, 110, 160);
+    ctx.fillStyle = '#d4d4d8';
+    ctx.fillRect(fpX + 20, y + 60, 70, 210);
+
+    ctx.fillStyle = '#1c1917';
+    ctx.fillRect(fpX + 25, fpY + 200, 60, 80);
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.arc(fpX + 55, fpY + 255, 16, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Chandelier
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.ellipse(cx + 80, y + 80, 75, 20, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Exit Door Area
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(cx - 40, y + h - 35, 80, 35);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('EXIT (E)', cx - 22, y + h - 12);
   }
 
-  // Draw Player Character (Stickman with Hats)
   function drawStickman(ctx, x, y, name, hat, isSitting, facingRight) {
     ctx.save();
     ctx.translate(x, y);
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath();
-    ctx.ellipse(0, isSitting ? 4 : 22, 10, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, isSitting ? 2 : 22, 10, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
     if (!isSitting) {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 3;
 
-      // Legs
-      ctx.beginPath();
-      ctx.moveTo(0, 5);
-      ctx.lineTo(-6, 22);
-      ctx.moveTo(0, 5);
-      ctx.lineTo(6, 22);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(-6, 22); ctx.moveTo(0, 5); ctx.lineTo(6, 22); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(0, 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(facingRight ? 10 : -10, 4); ctx.stroke();
 
-      // Body
-      ctx.beginPath();
-      ctx.moveTo(0, -10);
-      ctx.lineTo(0, 8);
-      ctx.stroke();
-
-      // Arms
-      ctx.beginPath();
-      ctx.moveTo(0, -4);
-      ctx.lineTo(facingRight ? 10 : -10, 4);
-      ctx.stroke();
-
-      // Head
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(0, -18, 8, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -18, 8, 0, Math.PI * 2); ctx.fill();
     } else {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 3;
-
-      // Sitting Pose
-      ctx.beginPath();
-      ctx.moveTo(0, -2);
-      ctx.lineTo(facingRight ? 8 : -8, 8);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(0, -18);
-      ctx.lineTo(0, 0);
-      ctx.stroke();
-
+      ctx.beginPath(); ctx.moveTo(0, -2); ctx.lineTo(facingRight ? 8 : -8, 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(0, 0); ctx.stroke();
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(0, -26, 8, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -26, 8, 0, Math.PI * 2); ctx.fill();
     }
 
     const headY = isSitting ? -26 : -18;
     if (hat === 'cowboy') {
       ctx.fillStyle = '#b45309';
-      ctx.beginPath();
-      ctx.ellipse(0, headY - 8, 14, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, headY - 8, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillRect(-7, headY - 16, 14, 9);
     } else if (hat === 'beanie') {
       ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(0, headY - 7, 8, Math.PI, 0, false);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, headY - 7, 8, Math.PI, 0, false); ctx.fill();
     } else if (hat === 'wizard') {
       ctx.fillStyle = '#8b5cf6';
-      ctx.beginPath();
-      ctx.moveTo(0, headY - 24);
-      ctx.lineTo(-10, headY - 6);
-      ctx.lineTo(10, headY - 6);
-      ctx.closePath();
-      ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0, headY - 24); ctx.lineTo(-10, headY - 6); ctx.lineTo(10, headY - 6); ctx.closePath(); ctx.fill();
     }
 
-    // Name Label
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    const textY = isSitting ? -38 : -30;
-    const txtWidth = ctx.measureText(name).width;
-    ctx.fillRect(-txtWidth/2 - 4, textY - 10, txtWidth + 8, 14);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(name, 0, textY);
+    ctx.fillText(name, 0, isSitting ? -38 : -30);
 
     ctx.restore();
   }
 
-  // Multiplayer Remote Sync
   const remotePlayers = {};
   if (db) {
     db.ref('players').on('value', (snapshot) => {
@@ -878,8 +612,6 @@
   }
 
   let fireAnim = 0;
-
-  // Main Game Loop
   function gameLoop() {
     fireAnim += 0.08;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -887,20 +619,12 @@
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
-    // Player Movement
     if (gameStarted && !myPlayer.isSitting) {
       if (keys['w'] || keys['arrowup']) myPlayer.y -= myPlayer.speed;
       if (keys['s'] || keys['arrowdown']) myPlayer.y += myPlayer.speed;
       if (keys['a'] || keys['arrowleft']) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; }
       if (keys['d'] || keys['arrowright']) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; }
 
-      // Boundaries depending on location
-      if (myPlayer.location === 'inside') {
-        myPlayer.x = Math.max(-330, Math.min(330, myPlayer.x));
-        myPlayer.y = Math.max(-40, Math.min(200, myPlayer.y));
-      }
-
-      // Sync to Firebase
       if (playerRef) {
         playerRef.set({
           x: myPlayer.x,
@@ -908,67 +632,68 @@
           name: playerName,
           hat: playerHat,
           isSitting: myPlayer.isSitting,
-          facing: myPlayer.facing,
-          location: myPlayer.location
-        }).catch(() => {});
+          inCabin: inCabin,
+          facing: myPlayer.facing
+        }).catch(e => {});
       }
     }
 
-    // Camera following local player
     const camX = cx - myPlayer.x;
     const camY = cy - myPlayer.y;
 
     ctx.save();
     ctx.translate(camX, camY);
 
-    if (myPlayer.location === 'outside') {
-      // --- RENDER OUTDOORS ---
-      // Trees
-      trees.forEach(t => drawTree(ctx, t.x, t.y, t.scale));
+    if (!inCabin) {
+      trees.forEach(t => drawTree(ctx, t.x + cx, t.y + cy, t.scale));
 
-      // Cabin Exterior Building
-      drawCabinExterior(ctx);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(cx + 120, cy - 200, 160, 120);
+      ctx.fillStyle = '#451a03';
+      ctx.beginPath();
+      ctx.moveTo(cx + 100, cy - 200);
+      ctx.lineTo(cx + 200, cy - 250);
+      ctx.lineTo(cx + 300, cy - 200);
+      ctx.fill();
 
-      // Campfire Logs
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(cx + 185, cy - 130, 30, 50);
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('DOOR (E)', cx + 180, cy - 140);
+
       logs.forEach(log => {
         ctx.save();
-        ctx.translate(log.offsetX, log.offsetY);
+        ctx.translate(cx + log.offsetX, cy + log.offsetY);
         ctx.rotate(log.angle);
         ctx.fillStyle = '#78350f';
         ctx.fillRect(-30, -10, 60, 20);
         ctx.restore();
       });
 
-      // Fire Glow
-      const glow = ctx.createRadialGradient(0, 220, 5, 0, 220, 75);
-      glow.addColorStop(0, 'rgba(245, 158, 11, 0.55)');
+      const glow = ctx.createRadialGradient(cx, cy, 5, cx, cy, 70);
+      glow.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
       glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
       ctx.fillStyle = glow;
       ctx.beginPath();
-      ctx.arc(0, 220, 75, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 70, 0, Math.PI * 2);
       ctx.fill();
 
-      // Flame
       ctx.fillStyle = '#f97316';
       ctx.beginPath();
-      ctx.arc(0, 220, 14 + Math.sin(fireAnim * 2) * 3, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 14 + Math.sin(fireAnim * 2) * 3, 0, Math.PI * 2);
       ctx.fill();
-
     } else {
-      // --- RENDER CABIN INTERIOR ---
-      drawCabinInterior(ctx);
+      drawCabinInteriorDetailed(ctx, cx, cy);
     }
 
-    // Render Remote Players in same location
     Object.keys(remotePlayers).forEach(id => {
       const p = remotePlayers[id];
-      const pLoc = p.location || 'outside';
-      if (pLoc === myPlayer.location) {
+      if (!!p.inCabin === inCabin) {
         drawStickman(ctx, p.x, p.y, p.name || 'Camper', p.hat || 'none', p.isSitting, p.facing === 'right');
       }
     });
 
-    // Render Local Player
     drawStickman(ctx, myPlayer.x, myPlayer.y, playerName, playerHat, myPlayer.isSitting, myPlayer.facing === 'right');
 
     ctx.restore();
@@ -978,984 +703,4 @@
   gameLoop();
 </script>
 </body>
-</html>a<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cursor Camp - 2D RPG & Cozy Cabin</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      width: 100vw;
-      height: 100vh;
-      background-color: #0b0f19;
-      color: #ffffff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    /* Start Screen Modal */
-    #startModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(11, 15, 25, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      pointer-events: auto;
-    }
-
-    .modal-box {
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 32px;
-      border-radius: 16px;
-      text-align: center;
-      width: 360px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    }
-
-    .modal-box h1 {
-      color: #f59e0b;
-      font-size: 28px;
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
-    }
-
-    .modal-box p {
-      color: #94a3b8;
-      font-size: 13px;
-      margin-bottom: 22px;
-    }
-
-    .modal-input {
-      width: 100%;
-      padding: 12px;
-      background: #0f172a;
-      border: 1px solid #475569;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 15px;
-      margin-bottom: 18px;
-      text-align: center;
-      outline: none;
-    }
-    .modal-input:focus {
-      border-color: #f59e0b;
-    }
-
-    .hat-select-label {
-      font-size: 12px;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-      text-align: left;
-      font-weight: 600;
-    }
-
-    .hat-options {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 22px;
-    }
-
-    .hat-btn {
-      flex: 1;
-      background: #0f172a;
-      border: 2px solid #334155;
-      border-radius: 8px;
-      padding: 8px 2px;
-      font-size: 11px;
-      cursor: pointer;
-      color: #94a3b8;
-      transition: all 0.2s;
-    }
-
-    .hat-btn.selected {
-      border-color: #f59e0b;
-      color: #fff;
-      background: #334155;
-    }
-
-    .start-btn {
-      width: 100%;
-      background: #f59e0b;
-      color: #0f172a;
-      border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .start-btn:hover {
-      background: #d97706;
-    }
-
-    /* HUD Header */
-    .hud-top {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: rgba(18, 24, 38, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 10px 18px;
-      z-index: 10;
-      backdrop-filter: blur(4px);
-    }
-
-    .hud-controls-hint {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 10px 22px;
-      border-radius: 20px;
-      font-size: 13px;
-      color: #cbd5e1;
-      z-index: 10;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      pointer-events: none;
-    }
-
-    #gameCanvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-</head>
-<body>
-
-  <!-- Start Screen -->
-  <div id="startModal">
-    <div class="modal-box">
-      <h1>⛺ Cursor Camp 🌲</h1>
-      <p>Explore the campsite & cozy cabin lounge!</p>
-      
-      <input type="text" id="playerNameInput" class="modal-input" placeholder="Your Name" maxlength="12" value="Camper">
-      
-      <div class="hat-select-label">Choose Your Hat:</div>
-      <div class="hat-options">
-        <button class="hat-btn selected" onclick="pickHat('none', this)">None</button>
-        <button class="hat-btn" onclick="pickHat('cowboy', this)">🤠 Cowboy</button>
-        <button class="hat-btn" onclick="pickHat('beanie', this)">🧢 Beanie</button>
-        <button class="hat-btn" onclick="pickHat('wizard', this)">🧙‍♂️ Wizard</button>
-      </div>
-
-      <button class="start-btn" onclick="enterGame()">Enter Campsite</button>
-    </div>
-  </div>
-
-  <!-- HUD Header -->
-  <div class="hud-top">
-    <div style="font-weight: bold; color: #f59e0b; font-size: 15px;">⛺ Cursor Camp & Cabin</div>
-    <div style="font-size: 12px; color: #10b981;" id="activeCampers">1 Camper Active</div>
-    <div style="font-size: 11px; color: #94a3b8; margin-top:2px;" id="locationStatus">Location: Campsite (Outside)</div>
-  </div>
-
-  <div class="hud-controls-hint" id="actionHint">
-    Walk: <b>WASD</b> / <b>Arrows</b> | Interact / Sit / Enter Door: Press <b>E</b>
-  </div>
-
-  <canvas id="gameCanvas"></canvas>
-
-<script>
-  // Firebase Safe Initialization
-  let db = null;
-  const firebaseConfig = {
-    apiKey: "AIzaSyACp-ZSaVYaUJEIxGNKTuFSXJkq9RPC0fA",
-    authDomain: "cursor-camp-788be.firebaseapp.com",
-    databaseURL: "https://cursor-camp-788be-default-rtdb.firebaseio.com",
-    projectId: "cursor-camp-788be",
-    storageBucket: "cursor-camp-788be.firebasestorage.app",
-    messagingSenderId: "840054967773",
-    appId: "1:840054967773:web:67a52ff630cc2ab3687a34"
-  };
-
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-  } catch (e) {
-    console.log("Running in local single-player / offline mode");
-  }
-
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  let gameStarted = false;
-  let playerName = "Camper";
-  let playerHat = "none";
-  const playerId = 'player_' + Math.random().toString(36).substr(2, 9);
-  let playerRef = null;
-
-  if (db) {
-    playerRef = db.ref('players/' + playerId);
-    playerRef.onDisconnect().remove();
-  }
-
-  // Player State
-  const myPlayer = {
-    x: 0,
-    y: 120, // Start outside in front of cabin
-    speed: 4,
-    isSitting: false,
-    facing: 'right',
-    location: 'outside' // 'outside' or 'inside'
-  };
-
-  function pickHat(hatName, btnElement) {
-    playerHat = hatName;
-    document.querySelectorAll('.hat-btn').forEach(b => b.classList.remove('selected'));
-    btnElement.classList.add('selected');
-  }
-
-  function enterGame() {
-    const nameVal = document.getElementById('playerNameInput').value.trim();
-    if (nameVal) playerName = nameVal;
-    
-    document.getElementById('startModal').style.display = 'none';
-    gameStarted = true;
-  }
-
-  document.getElementById('playerNameInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') enterGame();
-  });
-
-  // Campsite Elements
-  const logs = [
-    { offsetX: 0, offsetY: 220 - 55, angle: 0 },
-    { offsetX: 55, offsetY: 220, angle: Math.PI / 2 },
-    { offsetX: 0, offsetY: 220 + 55, angle: Math.PI },
-    { offsetX: -55, offsetY: 220, angle: (3 * Math.PI) / 2 }
-  ];
-
-  const trees = [];
-  for (let i = 0; i < 35; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 280 + Math.random() * 600;
-    trees.push({
-      x: Math.cos(angle) * dist,
-      y: Math.sin(angle) * dist + 100,
-      scale: Math.random() * 0.4 + 0.8
-    });
-  }
-
-  // Cabin Furniture Interaction Spots Inside
-  const cabinSeats = [
-    { id: 'yellowCouch', x: -220, y: 50, label: 'Yellow Couch' },
-    { id: 'orangeChair', x: 100, y: 70, label: 'Orange Armchair' },
-    { id: 'greenChair', x: 80, y: 150, label: 'Green Armchair' }
-  ];
-
-  const keys = {};
-  window.addEventListener('keydown', (e) => {
-    keys[e.key.toLowerCase()] = true;
-    if (e.key.toLowerCase() === 'e' && gameStarted) {
-      handleInteraction();
-    }
-  });
-  window.addEventListener('keyup', (e) => {
-    keys[e.key.toLowerCase()] = false;
-  });
-
-  function handleInteraction() {
-    if (myPlayer.location === 'outside') {
-      // Check Cabin Entrance Door
-      const distToDoor = Math.hypot(myPlayer.x - 0, myPlayer.y - (-80));
-      if (distToDoor < 50) {
-        // Enter Cabin
-        myPlayer.location = 'inside';
-        myPlayer.x = 0;
-        myPlayer.y = 170; // Inside near double doors
-        myPlayer.isSitting = false;
-        document.getElementById('locationStatus').innerText = "Location: Cabin Lounge (Inside)";
-        return;
-      }
-
-      // Check Sitting on Outside Campfire Logs
-      if (myPlayer.isSitting) {
-        myPlayer.isSitting = false;
-        myPlayer.y += 25;
-      } else {
-        logs.forEach((log) => {
-          const dist = Math.hypot(myPlayer.x - log.offsetX, myPlayer.y - log.offsetY);
-          if (dist < 45) {
-            myPlayer.isSitting = true;
-            myPlayer.x = log.offsetX;
-            myPlayer.y = log.offsetY - 4;
-          }
-        });
-      }
-    } else if (myPlayer.location === 'inside') {
-      // Check Exit Door inside
-      const distToExit = Math.hypot(myPlayer.x - 0, myPlayer.y - 180);
-      if (distToExit < 50 && !myPlayer.isSitting) {
-        // Exit Cabin
-        myPlayer.location = 'outside';
-        myPlayer.x = 0;
-        myPlayer.y = -60; // Outside door
-        document.getElementById('locationStatus').innerText = "Location: Campsite (Outside)";
-        return;
-      }
-
-      // Toggle Sitting on Cabin Chairs
-      if (myPlayer.isSitting) {
-        myPlayer.isSitting = false;
-        myPlayer.y += 20;
-      } else {
-        cabinSeats.forEach(seat => {
-          const dist = Math.hypot(myPlayer.x - seat.x, myPlayer.y - seat.y);
-          if (dist < 50) {
-            myPlayer.isSitting = true;
-            myPlayer.x = seat.x;
-            myPlayer.y = seat.y - 5;
-          }
-        });
-      }
-    }
-  }
-
-  // Draw Outdoor Tree
-  function drawTree(ctx, x, y, scale) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-
-    ctx.fillStyle = '#3d2817';
-    ctx.fillRect(-5, 10, 10, 22);
-
-    ctx.fillStyle = '#064e3b';
-    ctx.beginPath();
-    ctx.moveTo(0, -25);
-    ctx.lineTo(-28, 15);
-    ctx.lineTo(28, 15);
-    ctx.fill();
-
-    ctx.fillStyle = '#047857';
-    ctx.beginPath();
-    ctx.moveTo(0, -42);
-    ctx.lineTo(-22, -2);
-    ctx.lineTo(22, -2);
-    ctx.fill();
-
-    ctx.fillStyle = '#10b981';
-    ctx.beginPath();
-    ctx.moveTo(0, -58);
-    ctx.lineTo(-15, -15);
-    ctx.lineTo(15, -15);
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  // Draw Cabin Exterior Outside
-  function drawCabinExterior(ctx) {
-    ctx.save();
-    ctx.translate(0, -160);
-
-    // Main Log Walls
-    ctx.fillStyle = '#4a2c11';
-    ctx.fillRect(-140, -60, 280, 120);
-
-    // Roof Triangle
-    ctx.fillStyle = '#2d1808';
-    ctx.beginPath();
-    ctx.moveTo(0, -120);
-    ctx.lineTo(-160, -55);
-    ctx.lineTo(160, -55);
-    ctx.fill();
-
-    // Roof overhang line
-    ctx.strokeStyle = '#633812';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(0, -120);
-    ctx.lineTo(-165, -53);
-    ctx.moveTo(0, -120);
-    ctx.lineTo(165, -53);
-    ctx.stroke();
-
-    // Windows
-    ctx.fillStyle = '#fef08a';
-    ctx.strokeStyle = '#2d1808';
-    ctx.lineWidth = 3;
-    
-    // Left Window
-    ctx.fillRect(-100, -30, 40, 40);
-    ctx.strokeRect(-100, -30, 40, 40);
-    
-    // Right Window
-    ctx.fillRect(60, -30, 40, 40);
-    ctx.strokeRect(60, -30, 40, 40);
-
-    // Front Door
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(-22, 10, 44, 50);
-    ctx.strokeStyle = '#b45309';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(-22, 10, 44, 50);
-
-    // Door knob
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.arc(-14, 36, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Entrance Sign
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(-45, -45, 90, 20);
-    ctx.strokeStyle = '#451a03';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-45, -45, 90, 20);
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('COZY CABIN', 0, -31);
-
-    // Interaction Prompt
-    const distToDoor = Math.hypot(myPlayer.x - 0, myPlayer.y - (-80));
-    if (distToDoor < 60 && myPlayer.location === 'outside') {
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(-50, -75, 100, 22);
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('Press [E] Enter', 0, -60);
-    }
-
-    ctx.restore();
-  }
-
-  // Draw Cabin Interior (Matching Reference Image)
-  function drawCabinInterior(ctx) {
-    ctx.save();
-    // Center of Cabin Interior Room
-    const w = 760;
-    const h = 480;
-
-    // Room Outer Frame Boundary
-    ctx.fillStyle = '#0b0f19';
-    ctx.fillRect(-w/2 - 50, -h/2 - 50, w + 100, h + 100);
-
-    // Teal Walls Background
-    ctx.fillStyle = '#1b6b68';
-    ctx.fillRect(-w/2, -h/2, w, h);
-
-    // Wooden Floor (Planks)
-    ctx.fillStyle = '#d99b5d';
-    ctx.fillRect(-w/2, -60, w, h/2 + 60);
-
-    // Wooden Plank Lines
-    ctx.strokeStyle = '#b3783e';
-    ctx.lineWidth = 1.5;
-    for (let py = -60; py <= h/2; py += 30) {
-      ctx.beginPath();
-      ctx.moveTo(-w/2, py);
-      ctx.lineTo(w/2, py);
-      ctx.stroke();
-    }
-
-    // Wall Baseboard / Trim
-    ctx.fillStyle = '#401818';
-    ctx.fillRect(-w/2, -70, w, 12);
-
-    // --- VAULTED WOODEN CEILING RAFTERS ---
-    ctx.fillStyle = '#3a1b18';
-    ctx.beginPath();
-    ctx.moveTo(-w/2, -70);
-    ctx.lineTo(0, -h/2 - 10);
-    ctx.lineTo(w/2, -70);
-    ctx.lineTo(w/2, -h/2);
-    ctx.lineTo(-w/2, -h/2);
-    ctx.fill();
-
-    // Rafter Beams
-    ctx.strokeStyle = '#24100e';
-    ctx.lineWidth = 8;
-    for (let rx = -w/2 + 60; rx <= w/2 - 60; rx += 80) {
-      ctx.beginPath();
-      ctx.moveTo(rx, -70);
-      ctx.lineTo(0, -h/2 - 10);
-      ctx.stroke();
-    }
-
-    // --- BACK WINDOW WALL & BOOKSHELVES ---
-    // Large Grid Window Frame
-    ctx.fillStyle = '#143836';
-    ctx.fillRect(-180, -210, 360, 140);
-    ctx.fillStyle = '#87ceeb'; // Light sky blue window pane color
-    ctx.fillRect(-172, -202, 344, 124);
-
-    // Window Grids & Double Doors
-    ctx.strokeStyle = '#143836';
-    ctx.lineWidth = 4;
-    for (let wx = -172; wx <= 172; wx += 43) {
-      ctx.beginPath();
-      ctx.moveTo(wx, -202);
-      ctx.lineTo(wx, -78);
-      ctx.stroke();
-    }
-    for (let wy = -202; wy <= -78; wy += 31) {
-      ctx.beginPath();
-      ctx.moveTo(-172, wy);
-      ctx.lineTo(172, wy);
-      ctx.stroke();
-    }
-
-    // High Bookshelves along windows
-    ctx.fillStyle = '#5c2a18';
-    ctx.fillRect(-185, -135, 370, 14); // Shelf
-    // Books
-    const bookColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-    for (let bx = -175; bx < 170; bx += 12) {
-      if (Math.abs(bx) < 30) continue; // Door opening gap
-      ctx.fillStyle = bookColors[Math.abs(bx) % bookColors.length];
-      ctx.fillRect(bx, -155, 9, 20);
-    }
-
-    // Double Doors in Center Back Window
-    ctx.strokeStyle = '#0f2928';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(-40, -135, 80, 65);
-    ctx.beginPath();
-    ctx.moveTo(0, -135);
-    ctx.lineTo(0, -70);
-    ctx.stroke();
-
-    // --- CIRCULAR RING CHANDELIER ---
-    ctx.strokeStyle = '#332918';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, -h/2 - 10);
-    ctx.lineTo(0, -170);
-    ctx.stroke();
-
-    // Ring
-    ctx.strokeStyle = '#b45309';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.ellipse(0, -170, 50, 14, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Glowing Bulbs on Chandelier
-    ctx.fillStyle = '#fef08a';
-    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-      const bx = Math.cos(angle) * 50;
-      const by = -170 + Math.sin(angle) * 14;
-      ctx.beginPath();
-      ctx.arc(bx, by, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // --- LEFT WALL DECORATIONS ---
-    // Framed Giant Orange Fish Art
-    ctx.fillStyle = '#d97706'; // Gold Frame
-    ctx.fillRect(-340, -190, 110, 85);
-    ctx.fillStyle = '#fef3c7'; // Canvas
-    ctx.fillRect(-333, -183, 96, 71);
-    
-    // Fish Graphic
-    ctx.fillStyle = '#f97316';
-    ctx.beginPath();
-    ctx.ellipse(-285, -148, 28, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Tail
-    ctx.beginPath();
-    ctx.moveTo(-260, -148);
-    ctx.lineTo(-248, -162);
-    ctx.lineTo(-248, -134);
-    ctx.closePath();
-    ctx.fill();
-
-    // Wall Pennants/Banners
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.moveTo(-365, -180);
-    ctx.lineTo(-345, -180);
-    ctx.lineTo(-355, -130);
-    ctx.fill();
-
-    // Grandfather Clock Left
-    ctx.fillStyle = '#451a03';
-    ctx.fillRect(-195, -70, 24, 75);
-    ctx.fillStyle = '#fef08a';
-    ctx.beginPath();
-    ctx.arc(-183, -55, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Tall Cabinet / Glass Case Left Wall
-    ctx.fillStyle = '#3a1b18';
-    ctx.fillRect(-365, -60, 42, 100);
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(-360, -55, 32, 40);
-
-    // --- RIGHT WALL FIREPLACE & DECOR ---
-    // Stone Fireplace Structure
-    ctx.fillStyle = '#78716c';
-    ctx.fillRect(250, -110, 100, 130);
-    ctx.fillStyle = '#44403c'; // Fireplace Cavity
-    ctx.fillRect(270, -40, 60, 60);
-
-    // Chimney Hood Vent extending up
-    ctx.fillStyle = '#d6d3d1';
-    ctx.beginPath();
-    ctx.moveTo(260, -110);
-    ctx.lineTo(280, -220);
-    ctx.lineTo(320, -220);
-    ctx.lineTo(340, -110);
-    ctx.fill();
-
-    // Animated Fire in Fireplace
-    ctx.fillStyle = '#f97316';
-    ctx.beginPath();
-    ctx.arc(300, 10, 14 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#fef08a';
-    ctx.beginPath();
-    ctx.arc(300, 8, 8 + Math.sin(Date.now() * 0.01) * 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Framed pictures right wall
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(260, -170, 25, 32);
-    ctx.fillRect(300, -180, 30, 40);
-
-    // Potted Green Plant
-    ctx.fillStyle = '#991b1b'; // Red Pot
-    ctx.fillRect(205, -20, 22, 22);
-    ctx.fillStyle = '#15803d'; // Leaves
-    ctx.beginPath();
-    ctx.arc(216, -28, 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    // --- RUGS & FURNITURE (MATCHING IMAGE) ---
-    // Left Runner Patterned Rug
-    ctx.fillStyle = '#c2410c';
-    ctx.fillRect(-310, 70, 180, 110);
-    ctx.strokeStyle = '#fef08a';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(-302, 78, 164, 94);
-
-    // Coffee Table on Runner Rug
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(-270, 105, 100, 40);
-    ctx.fillStyle = '#e2e8f0'; // Bowl/plate on table
-    ctx.beginPath();
-    ctx.arc(-220, 125, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // YELLOW COUCH (Left)
-    ctx.fillStyle = '#ca8a04';
-    // Backrest
-    ctx.fillRect(-280, 15, 120, 30);
-    // Cushions
-    ctx.fillRect(-275, 40, 110, 35);
-    // Armrests
-    ctx.fillStyle = '#a16207';
-    ctx.fillRect(-285, 25, 15, 45);
-    ctx.fillRect(-170, 25, 15, 45);
-    // Striped Red Pillow
-    ctx.fillStyle = '#dc2626';
-    ctx.fillRect(-265, 30, 20, 20);
-
-    // BLACK CAT ON YELLOW COUCH 🐱
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath();
-    ctx.arc(-210, 45, 9, 0, Math.PI * 2); // Body
-    ctx.arc(-198, 42, 6, 0, Math.PI * 2); // Head
-    ctx.fill();
-    // Cat ears
-    ctx.beginPath();
-    ctx.moveTo(-201, 37); ctx.lineTo(-198, 32); ctx.lineTo(-195, 37);
-    ctx.fill();
-
-    // CIRCULAR GREY RUG (Center Right)
-    ctx.fillStyle = '#94a3b8';
-    ctx.beginPath();
-    ctx.ellipse(100, 130, 110, 70, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#cbd5e1';
-    ctx.beginPath();
-    ctx.ellipse(100, 130, 95, 58, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ORANGE ARMCHAIR
-    ctx.fillStyle = '#ea580c';
-    ctx.fillRect(80, 40, 50, 45); // Cushion
-    ctx.fillRect(75, 25, 60, 20); // Back
-    ctx.fillStyle = '#c2410c';
-    ctx.fillRect(70, 35, 12, 45); // Arm left
-    ctx.fillRect(128, 35, 12, 45); // Arm right
-
-    // GREEN ARMCHAIR
-    ctx.fillStyle = '#15803d';
-    ctx.fillRect(60, 135, 48, 40); // Cushion
-    ctx.fillRect(55, 120, 58, 20); // Back
-    ctx.fillStyle = '#166534';
-    ctx.fillRect(50, 130, 12, 40);
-    ctx.fillRect(106, 130, 12, 40);
-
-    // Small Side Table between chairs
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(150, 110, 45, 35);
-    ctx.fillStyle = '#fef08a'; // Teapot/Cup
-    ctx.fillRect(165, 120, 12, 12);
-
-    // DOORWAY EXIT PROMPT
-    const distToExit = Math.hypot(myPlayer.x - 0, myPlayer.y - 180);
-    if (distToExit < 60) {
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(-60, 200, 120, 22);
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Press [E] Exit Outside', 0, 215);
-    }
-
-    ctx.restore();
-  }
-
-  // Draw Player Character (Stickman with Hats)
-  function drawStickman(ctx, x, y, name, hat, isSitting, facingRight) {
-    ctx.save();
-    ctx.translate(x, y);
-
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.beginPath();
-    ctx.ellipse(0, isSitting ? 4 : 22, 10, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (!isSitting) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-
-      // Legs
-      ctx.beginPath();
-      ctx.moveTo(0, 5);
-      ctx.lineTo(-6, 22);
-      ctx.moveTo(0, 5);
-      ctx.lineTo(6, 22);
-      ctx.stroke();
-
-      // Body
-      ctx.beginPath();
-      ctx.moveTo(0, -10);
-      ctx.lineTo(0, 8);
-      ctx.stroke();
-
-      // Arms
-      ctx.beginPath();
-      ctx.moveTo(0, -4);
-      ctx.lineTo(facingRight ? 10 : -10, 4);
-      ctx.stroke();
-
-      // Head
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(0, -18, 8, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-
-      // Sitting Pose
-      ctx.beginPath();
-      ctx.moveTo(0, -2);
-      ctx.lineTo(facingRight ? 8 : -8, 8);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(0, -18);
-      ctx.lineTo(0, 0);
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(0, -26, 8, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    const headY = isSitting ? -26 : -18;
-    if (hat === 'cowboy') {
-      ctx.fillStyle = '#b45309';
-      ctx.beginPath();
-      ctx.ellipse(0, headY - 8, 14, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillRect(-7, headY - 16, 14, 9);
-    } else if (hat === 'beanie') {
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(0, headY - 7, 8, Math.PI, 0, false);
-      ctx.fill();
-    } else if (hat === 'wizard') {
-      ctx.fillStyle = '#8b5cf6';
-      ctx.beginPath();
-      ctx.moveTo(0, headY - 24);
-      ctx.lineTo(-10, headY - 6);
-      ctx.lineTo(10, headY - 6);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    // Name Label
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
-    const textY = isSitting ? -38 : -30;
-    const txtWidth = ctx.measureText(name).width;
-    ctx.fillRect(-txtWidth/2 - 4, textY - 10, txtWidth + 8, 14);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(name, 0, textY);
-
-    ctx.restore();
-  }
-
-  // Multiplayer Remote Sync
-  const remotePlayers = {};
-  if (db) {
-    db.ref('players').on('value', (snapshot) => {
-      const data = snapshot.val() || {};
-      const count = Object.keys(data).length;
-      document.getElementById('activeCampers').innerText = count + (count === 1 ? ' Camper Active' : ' Campers Active');
-
-      Object.keys(data).forEach(id => {
-        if (id === playerId) return;
-        remotePlayers[id] = data[id];
-      });
-      Object.keys(remotePlayers).forEach(id => {
-        if (!data[id]) delete remotePlayers[id];
-      });
-    });
-  }
-
-  let fireAnim = 0;
-
-  // Main Game Loop
-  function gameLoop() {
-    fireAnim += 0.08;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-
-    // Player Movement
-    if (gameStarted && !myPlayer.isSitting) {
-      if (keys['w'] || keys['arrowup']) myPlayer.y -= myPlayer.speed;
-      if (keys['s'] || keys['arrowdown']) myPlayer.y += myPlayer.speed;
-      if (keys['a'] || keys['arrowleft']) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; }
-      if (keys['d'] || keys['arrowright']) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; }
-
-      // Boundaries depending on location
-      if (myPlayer.location === 'inside') {
-        myPlayer.x = Math.max(-330, Math.min(330, myPlayer.x));
-        myPlayer.y = Math.max(-40, Math.min(200, myPlayer.y));
-      }
-
-      // Sync to Firebase
-      if (playerRef) {
-        playerRef.set({
-          x: myPlayer.x,
-          y: myPlayer.y,
-          name: playerName,
-          hat: playerHat,
-          isSitting: myPlayer.isSitting,
-          facing: myPlayer.facing,
-          location: myPlayer.location
-        }).catch(() => {});
-      }
-    }
-
-    // Camera following local player
-    const camX = cx - myPlayer.x;
-    const camY = cy - myPlayer.y;
-
-    ctx.save();
-    ctx.translate(camX, camY);
-
-    if (myPlayer.location === 'outside') {
-      // --- RENDER OUTDOORS ---
-      // Trees
-      trees.forEach(t => drawTree(ctx, t.x, t.y, t.scale));
-
-      // Cabin Exterior Building
-      drawCabinExterior(ctx);
-
-      // Campfire Logs
-      logs.forEach(log => {
-        ctx.save();
-        ctx.translate(log.offsetX, log.offsetY);
-        ctx.rotate(log.angle);
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(-30, -10, 60, 20);
-        ctx.restore();
-      });
-
-      // Fire Glow
-      const glow = ctx.createRadialGradient(0, 220, 5, 0, 220, 75);
-      glow.addColorStop(0, 'rgba(245, 158, 11, 0.55)');
-      glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(0, 220, 75, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Flame
-      ctx.fillStyle = '#f97316';
-      ctx.beginPath();
-      ctx.arc(0, 220, 14 + Math.sin(fireAnim * 2) * 3, 0, Math.PI * 2);
-      ctx.fill();
-
-    } else {
-      // --- RENDER CABIN INTERIOR ---
-      drawCabinInterior(ctx);
-    }
-
-    // Render Remote Players in same location
-    Object.keys(remotePlayers).forEach(id => {
-      const p = remotePlayers[id];
-      const pLoc = p.location || 'outside';
-      if (pLoc === myPlayer.location) {
-        drawStickman(ctx, p.x, p.y, p.name || 'Camper', p.hat || 'none', p.isSitting, p.facing === 'right');
-      }
-    });
-
-    // Render Local Player
-    drawStickman(ctx, myPlayer.x, myPlayer.y, playerName, playerHat, myPlayer.isSitting, myPlayer.facing === 'right');
-
-    ctx.restore();
-    requestAnimationFrame(gameLoop);
-  }
-
-  gameLoop();
-</script>
-</body>
-</html>a
+</html>
