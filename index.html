@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wiener Dog Camp - Voice Chat Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wiener Dog Camp - PC & Mobile Roblox Chat Edition</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
     body {
@@ -37,15 +39,18 @@
       justify-content: center;
       z-index: 99999;
       pointer-events: auto;
+      overflow-y: auto;
+      padding: 16px;
     }
 
     .modal-card {
       background: #111827;
       border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 32px;
+      padding: 24px;
       border-radius: 20px;
       text-align: center;
-      width: 380px;
+      width: 100%;
+      max-width: 420px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.15);
       position: relative;
       z-index: 100000;
@@ -53,19 +58,19 @@
 
     .modal-card h1 {
       color: #f59e0b;
-      font-size: 26px;
-      margin-bottom: 6px;
+      font-size: 24px;
+      margin-bottom: 4px;
       letter-spacing: 0.5px;
     }
 
     .modal-card p {
       color: #9ca3af;
       font-size: 13px;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       text-align: left;
     }
 
@@ -79,7 +84,7 @@
 
     .modal-input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 10px 14px;
       background: #1f2937;
       border: 1px solid #374151;
       border-radius: 10px;
@@ -97,7 +102,7 @@
     .selection-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
     }
 
     .select-btn {
@@ -162,41 +167,170 @@
       backdrop-filter: blur(8px);
     }
 
-    .voice-status {
-      font-size: 11px;
-      margin-top: 4px;
-      color: #9ca3af;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .mic-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: #6b7280;
-    }
-
-    .mic-dot.active {
-      background-color: #10b981;
-      box-shadow: 0 0 8px #10b981;
-    }
-
     .hud-controls-hint {
       position: absolute;
-      bottom: 20px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(17, 24, 39, 0.88);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 10px 22px;
+      padding: 8px 18px;
       border-radius: 24px;
-      font-size: 13px;
+      font-size: 12px;
       color: #d1d5db;
       z-index: 10;
       backdrop-filter: blur(8px);
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      white-space: nowrap;
+    }
+
+    /* Roblox-style Chat Box UI */
+    #chatContainer {
+      position: absolute;
+      bottom: 70px;
+      left: 16px;
+      width: 280px;
+      max-height: 180px;
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    #chatLog {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+      pointer-events: auto;
+    }
+
+    .chat-message-item {
+      background: rgba(15, 23, 42, 0.85);
+      border-left: 3px solid #f59e0b;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #e2e8f0;
+      backdrop-filter: blur(4px);
+      word-break: break-word;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .chat-message-item span {
+      font-weight: bold;
+      color: #f59e0b;
+    }
+
+    #chatInputBox {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      backdrop-filter: blur(6px);
+      pointer-events: auto;
+      display: none;
+    }
+
+    #chatInputBox:focus {
+      border-color: #f59e0b;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+
+    /* On-Screen Mobile Touch Controls */
+    #mobileHUD {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 50;
+      display: none; /* Displayed when mobile mode is active */
+    }
+
+    .dpad-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 140px;
+      height: 140px;
+      pointer-events: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .dpad-btn {
+      background: rgba(31, 41, 55, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      touch-action: manipulation;
+    }
+
+    .dpad-btn:active {
+      background: rgba(245, 158, 11, 0.8);
+      color: #0f172a;
+    }
+
+    .dpad-up { grid-column: 2; grid-row: 1; }
+    .dpad-left { grid-column: 1; grid-row: 2; }
+    .dpad-right { grid-column: 3; grid-row: 2; }
+    .dpad-down { grid-column: 2; grid-row: 3; }
+
+    .action-buttons {
+      position: absolute;
+      bottom: 25px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .action-btn {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: rgba(31, 41, 55, 0.85);
+      border: 2px solid rgba(245, 158, 11, 0.6);
+      color: #f59e0b;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      touch-action: manipulation;
+    }
+
+    .action-btn:active {
+      background: #f59e0b;
+      color: #0f172a;
+      transform: scale(0.95);
+    }
+
+    .action-btn span {
+      font-size: 18px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     #gameCanvas {
@@ -209,9 +343,6 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <!-- Agora Real-time Voice Chat SDK -->
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.17.0.js"></script>
 </head>
 <body>
 
@@ -219,11 +350,23 @@
   <div id="startModal">
     <div class="modal-card">
       <h1>🌭 Lakefront Camp 🌭</h1>
-      <p>Customize your dachshund & explore the lakefront!</p>
+      <p>Customize your dachshund & select your controls!</p>
       
       <div class="form-group">
         <label class="form-label">Dog Name:</label>
         <input type="text" id="playerNameInput" class="modal-input" placeholder="Name your dog..." maxlength="12" value="Mr. Weens">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Select Device Mode:</label>
+        <div class="selection-grid">
+          <button type="button" class="select-btn device-btn selected" data-device="pc" onclick="selectDevice('pc', this)">
+            💻 PC (Keyboard)
+          </button>
+          <button type="button" class="select-btn device-btn" data-device="mobile" onclick="selectDevice('mobile', this)">
+            📱 Mobile (Touch)
+          </button>
+        </div>
       </div>
 
       <div class="form-group">
@@ -258,14 +401,34 @@
       <span>🌊</span> Lakefront Wiener Camp
     </div>
     <div style="font-size: 12px; color: #10b981; margin-top: 2px;" id="activeCampers">1 Dachshund Online</div>
-    <div class="voice-status">
-      <div class="mic-dot" id="micIndicator"></div>
-      <span id="voiceStatusText">Voice Chat: Off</span>
-    </div>
   </div>
 
-  <div class="hud-controls-hint">
-    Move: <b>WASD / Arrows</b> • Hop on Log / Enter Door: <b>Press E</b>
+  <div class="hud-controls-hint" id="hudHint">
+    Move: <b>WASD / Arrows</b> • Chat: Press <b>/</b> • Cabin/Log: <b>Press E</b>
+  </div>
+
+  <!-- Roblox-style Chat Overlay -->
+  <div id="chatContainer">
+    <div id="chatLog"></div>
+    <input type="text" id="chatInputBox" placeholder="Press '/' to chat, 'Enter' to send..." maxlength="80">
+  </div>
+
+  <!-- Mobile On-Screen Touch Controls -->
+  <div id="mobileHUD">
+    <div class="dpad-container">
+      <div class="dpad-btn dpad-up" id="btnUp">▲</div>
+      <div class="dpad-btn dpad-left" id="btnLeft">◄</div>
+      <div class="dpad-btn dpad-right" id="btnRight">►</div>
+      <div class="dpad-btn dpad-down" id="btnDown">▼</div>
+    </div>
+    <div class="action-buttons">
+      <button type="button" class="action-btn" id="btnChat">
+        <span>💬</span> CHAT
+      </button>
+      <button type="button" class="action-btn" id="btnInteract">
+        <span>🐾</span> USE
+      </button>
+    </div>
   </div>
 
   <canvas id="gameCanvas"></canvas>
@@ -301,6 +464,7 @@
   resize();
 
   let gameStarted = false;
+  let deviceMode = 'pc'; // 'pc' or 'mobile'
   let playerName = "Mr. Weens";
   let dogBreed = "black_tan";
   let playerHat = "none";
@@ -319,43 +483,15 @@
     speed: 3.8,
     isSitting: false,
     facing: 'right',
-    animFrame: 0
+    animFrame: 0,
+    currentMsg: "",
+    msgTimer: 0
   };
 
-  // AGORA REALTIME VOICE CHAT INTEGRATION
-  let rtcClient = null;
-  let localAudioTrack = null;
-
-  async function initVoiceChat() {
-    const statusText = document.getElementById('voiceStatusText');
-    const micDot = document.getElementById('micIndicator');
-
-    try {
-      rtcClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-      
-      // Paste your Agora App ID here (testing mode supports null tokens)
-      const appId = "YOUR_AGORA_APP_ID"; 
-      const channelName = "lakefront-camp-voice";
-
-      statusText.innerText = "Connecting Voice...";
-      await rtcClient.join(appId, channelName, null, null);
-
-      localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      await rtcClient.publish([localAudioTrack]);
-
-      micDot.classList.add('active');
-      statusText.innerText = "Voice Chat: Live 🎙️";
-
-      rtcClient.on("user-published", async (user, mediaType) => {
-        await rtcClient.subscribe(user, mediaType);
-        if (mediaType === "audio") {
-          user.audioTrack.play();
-        }
-      });
-    } catch (err) {
-      console.log("Voice chat setup info:", err);
-      statusText.innerText = "Voice Chat: Ready (Mic Permission Req)";
-    }
+  function selectDevice(device, element) {
+    deviceMode = device;
+    document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('selected'));
+    element.classList.add('selected');
   }
 
   function selectBreed(breed, element) {
@@ -373,9 +509,17 @@
   function enterGame() {
     const nameVal = document.getElementById('playerNameInput').value.trim();
     if (nameVal) playerName = nameVal;
-    
-    // Connect voice chat upon entering
-    initVoiceChat();
+
+    // Set UI for selected device mode
+    if (deviceMode === 'mobile') {
+      document.getElementById('mobileHUD').style.display = 'block';
+      document.getElementById('hudHint').innerText = "Use D-Pad to move • Tap USE to interact/sit";
+      // Adjust chat box position so touch buttons don't block it
+      document.getElementById('chatContainer').style.bottom = '175px';
+    } else {
+      document.getElementById('mobileHUD').style.display = 'none';
+      document.getElementById('hudHint').innerHTML = "Move: <b>WASD / Arrows</b> • Chat: Press <b>/</b> • Cabin/Log: <b>Press E</b>";
+    }
 
     const modal = document.getElementById('startModal');
     if (modal) modal.remove();
@@ -385,6 +529,133 @@
   document.getElementById('enterBtn').addEventListener('click', enterGame);
   document.getElementById('playerNameInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') enterGame();
+  });
+
+  // Automatically select Mobile mode if touch screen detected
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    const mobileBtn = document.querySelector('.device-btn[data-device="mobile"]');
+    if (mobileBtn) selectDevice('mobile', mobileBtn);
+  }
+
+  // ROBLOX CHAT SYSTEM LOGIC
+  const chatInput = document.getElementById('chatInputBox');
+  const chatLog = document.getElementById('chatLog');
+  let isChatting = false;
+
+  function openChat() {
+    if (!gameStarted || isChatting) return;
+    isChatting = true;
+    chatInput.style.display = 'block';
+    chatInput.focus();
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (!gameStarted) return;
+    if (e.key === '/' && !isChatting) {
+      e.preventDefault();
+      openChat();
+    }
+  });
+
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    } else if (e.key === 'Escape') {
+      closeChat();
+    }
+  });
+
+  function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (text && db) {
+      db.ref('chats').push({
+        name: playerName,
+        text: text,
+        timestamp: Date.now()
+      });
+
+      myPlayer.currentMsg = text;
+      myPlayer.msgTimer = 240;
+    }
+    closeChat();
+  }
+
+  function closeChat() {
+    chatInput.value = '';
+    chatInput.style.display = 'none';
+    isChatting = false;
+    canvas.focus();
+  }
+
+  if (db) {
+    db.ref('chats').limitToLast(15).on('child_added', (snapshot) => {
+      const msg = snapshot.val();
+      if (!msg) return;
+
+      const item = document.createElement('div');
+      item.className = 'chat-message-item';
+      item.innerHTML = `<span>${msg.name}:</span> ${msg.text}`;
+      chatLog.appendChild(item);
+      chatLog.scrollTop = chatLog.scrollHeight;
+
+      if (chatLog.children.length > 20) {
+        chatLog.removeChild(chatLog.firstChild);
+      }
+    });
+  }
+
+  // CONTROLS & INTERACTION
+  const keys = {};
+  const mobileKeys = { up: false, down: false, left: false, right: false };
+
+  window.addEventListener('keydown', (e) => {
+    if (isChatting) return;
+    keys[e.key.toLowerCase()] = true;
+    if (e.key.toLowerCase() === 'e' && gameStarted) {
+      handleInteract();
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  // Mobile Touch Event Handlers
+  function bindTouchBtn(btnId, keyName) {
+    const btn = document.getElementById(btnId);
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      mobileKeys[keyName] = true;
+    });
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      mobileKeys[keyName] = false;
+    });
+    btn.addEventListener('mousedown', () => { mobileKeys[keyName] = true; });
+    btn.addEventListener('mouseup', () => { mobileKeys[keyName] = false; });
+  }
+
+  bindTouchBtn('btnUp', 'up');
+  bindTouchBtn('btnDown', 'down');
+  bindTouchBtn('btnLeft', 'left');
+  bindTouchBtn('btnRight', 'right');
+
+  document.getElementById('btnInteract').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    handleInteract();
+  });
+  document.getElementById('btnInteract').addEventListener('click', handleInteract);
+
+  document.getElementById('btnChat').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (isChatting) {
+      sendChatMessage();
+    } else {
+      openChat();
+    }
+  });
+  document.getElementById('btnChat').addEventListener('click', () => {
+    if (!isChatting) openChat();
   });
 
   const logs = [
@@ -413,17 +684,6 @@
       phase: Math.random() * Math.PI * 2
     });
   }
-
-  const keys = {};
-  window.addEventListener('keydown', (e) => {
-    keys[e.key.toLowerCase()] = true;
-    if (e.key.toLowerCase() === 'e' && gameStarted) {
-      handleInteract();
-    }
-  });
-  window.addEventListener('keyup', (e) => {
-    keys[e.key.toLowerCase()] = false;
-  });
 
   function handleInteract() {
     const cx = canvas.width / 2;
@@ -462,7 +722,7 @@
     }
   }
 
-  function drawDachshund(ctx, x, y, name, breed, hat, isSitting, facingRight, isMoving, animTime) {
+  function drawDachshund(ctx, x, y, name, breed, hat, isSitting, facingRight, isMoving, animTime, chatMessage) {
     ctx.save();
     ctx.translate(x, y);
 
@@ -582,12 +842,40 @@
 
     ctx.restore();
 
+    // Name Tag & Roblox Speech Bubble
     ctx.save();
     ctx.translate(x, y);
+    const tagY = isSitting ? -36 : -32;
+    
     ctx.fillStyle = '#f59e0b';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(name, 0, isSitting ? -36 : -32);
+    ctx.fillText(name, 0, tagY);
+
+    if (chatMessage) {
+      ctx.font = '12px sans-serif';
+      const textWidth = ctx.measureText(chatMessage).width;
+      const bubbleW = textWidth + 16;
+      const bubbleH = 26;
+      const bubbleX = -bubbleW / 2;
+      const bubbleY = tagY - 32;
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath();
+      ctx.roundRect(bubbleX, bubbleY, bubbleW, bubbleH, 8);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(-4, bubbleY + bubbleH);
+      ctx.lineTo(4, bubbleY + bubbleH);
+      ctx.lineTo(0, bubbleY + bubbleH + 5);
+      ctx.fill();
+
+      ctx.fillStyle = '#0f172a';
+      ctx.textAlign = 'center';
+      ctx.fillText(chatMessage, 0, bubbleY + 17);
+    }
+
     ctx.restore();
   }
 
@@ -661,7 +949,7 @@
 
     ctx.fillStyle = '#f59e0b';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('ENTER CABIN (E)', 50, -45);
+    ctx.fillText('ENTER CABIN', 50, -45);
 
     ctx.restore();
   }
@@ -716,7 +1004,7 @@
     ctx.fillRect(cx - 80, cy + 90, 160, 80);
 
     ctx.fillStyle = '#0f172a'; ctx.fillRect(cx - 40, y + h - 35, 80, 35);
-    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('EXIT (E)', cx - 22, y + h - 12);
+    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('EXIT', cx - 12, y + h - 12);
   }
 
   const remotePlayers = {};
@@ -745,25 +1033,31 @@
     const cy = canvas.height / 2;
 
     let isMoving = false;
-    if (gameStarted && !myPlayer.isSitting) {
-      if (keys['w'] || keys['arrowup']) { myPlayer.y -= myPlayer.speed; isMoving = true; }
-      if (keys['s'] || keys['arrowdown']) { myPlayer.y += myPlayer.speed; isMoving = true; }
-      if (keys['a'] || keys['arrowleft']) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; isMoving = true; }
-      if (keys['d'] || keys['arrowright']) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; isMoving = true; }
+    if (gameStarted && !myPlayer.isSitting && !isChatting) {
+      if (keys['w'] || keys['arrowup'] || mobileKeys.up) { myPlayer.y -= myPlayer.speed; isMoving = true; }
+      if (keys['s'] || keys['arrowdown'] || mobileKeys.down) { myPlayer.y += myPlayer.speed; isMoving = true; }
+      if (keys['a'] || keys['arrowleft'] || mobileKeys.left) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; isMoving = true; }
+      if (keys['d'] || keys['arrowright'] || mobileKeys.right) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; isMoving = true; }
+    }
 
-      if (playerRef) {
-        playerRef.set({
-          x: myPlayer.x,
-          y: myPlayer.y,
-          name: playerName,
-          breed: dogBreed,
-          hat: playerHat,
-          isSitting: myPlayer.isSitting,
-          inCabin: inCabin,
-          facing: myPlayer.facing,
-          isMoving: isMoving
-        }).catch(e => {});
-      }
+    if (myPlayer.msgTimer > 0) {
+      myPlayer.msgTimer--;
+      if (myPlayer.msgTimer === 0) myPlayer.currentMsg = "";
+    }
+
+    if (playerRef && gameStarted) {
+      playerRef.set({
+        x: myPlayer.x,
+        y: myPlayer.y,
+        name: playerName,
+        breed: dogBreed,
+        hat: playerHat,
+        isSitting: myPlayer.isSitting,
+        inCabin: inCabin,
+        facing: myPlayer.facing,
+        isMoving: isMoving,
+        msg: myPlayer.currentMsg
+      }).catch(e => {});
     }
 
     const camX = cx - myPlayer.x;
@@ -830,11 +1124,11 @@
     Object.keys(remotePlayers).forEach(id => {
       const p = remotePlayers[id];
       if (!!p.inCabin === inCabin) {
-        drawDachshund(ctx, p.x, p.y, p.name || 'Dachshund', p.breed || 'black_tan', p.hat || 'none', p.isSitting, p.facing === 'right', p.isMoving, globalTime);
+        drawDachshund(ctx, p.x, p.y, p.name || 'Dachshund', p.breed || 'black_tan', p.hat || 'none', p.isSitting, p.facing === 'right', p.isMoving, globalTime, p.msg);
       }
     });
 
-    drawDachshund(ctx, myPlayer.x, myPlayer.y, playerName, dogBreed, playerHat, myPlayer.isSitting, myPlayer.facing === 'right', isMoving, globalTime);
+    drawDachshund(ctx, myPlayer.x, myPlayer.y, playerName, dogBreed, playerHat, myPlayer.isSitting, myPlayer.facing === 'right', isMoving, globalTime, myPlayer.currentMsg);
 
     ctx.restore();
     requestAnimationFrame(gameLoop);
