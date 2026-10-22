@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wiener Dog Camp - New Lakefront Edition</title>
+  <title>Wiener Dog Camp - Voice Chat Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -36,6 +36,7 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      pointer-events: auto;
     }
 
     .modal-card {
@@ -46,6 +47,8 @@
       text-align: center;
       width: 380px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.15);
+      position: relative;
+      z-index: 100000;
     }
 
     .modal-card h1 {
@@ -137,6 +140,8 @@
       margin-top: 10px;
       box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      z-index: 100001;
     }
 
     .start-btn:hover {
@@ -155,6 +160,27 @@
       padding: 10px 18px;
       z-index: 10;
       backdrop-filter: blur(8px);
+    }
+
+    .voice-status {
+      font-size: 11px;
+      margin-top: 4px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mic-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #6b7280;
+    }
+
+    .mic-dot.active {
+      background-color: #10b981;
+      box-shadow: 0 0 8px #10b981;
     }
 
     .hud-controls-hint {
@@ -183,10 +209,13 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Agora Real-time Voice Chat SDK -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.17.0.js"></script>
 </head>
 <body>
 
-  <!-- Start Screen Modal -->
+  <!-- Start Screen Modal Overlay -->
   <div id="startModal">
     <div class="modal-card">
       <h1>🌭 Lakefront Camp 🌭</h1>
@@ -200,10 +229,10 @@
       <div class="form-group">
         <label class="form-label">Choose Dog Breed Coat:</label>
         <div class="selection-grid">
-          <button class="select-btn breed-btn selected" data-breed="black_tan" onclick="selectBreed('black_tan', this)">
+          <button type="button" class="select-btn breed-btn selected" data-breed="black_tan" onclick="selectBreed('black_tan', this)">
             🐾 Black & Tan
           </button>
-          <button class="select-btn breed-btn" data-breed="red_tan" onclick="selectBreed('red_tan', this)">
+          <button type="button" class="select-btn breed-btn" data-breed="red_tan" onclick="selectBreed('red_tan', this)">
             🐕 Red / Tan
           </button>
         </div>
@@ -212,14 +241,14 @@
       <div class="form-group">
         <label class="form-label">Choose Hat:</label>
         <div class="selection-grid hat-grid">
-          <button class="select-btn hat-btn selected" data-hat="none" onclick="selectHat('none', this)">None</button>
-          <button class="select-btn hat-btn" data-hat="cowboy" onclick="selectHat('cowboy', this)">🤠 Cowboy</button>
-          <button class="select-btn hat-btn" data-hat="beanie" onclick="selectHat('beanie', this)">🧢 Beanie</button>
-          <button class="select-btn hat-btn" data-hat="wizard" onclick="selectHat('wizard', this)">🧙‍♂️ Wizard</button>
+          <button type="button" class="select-btn hat-btn selected" data-hat="none" onclick="selectHat('none', this)">None</button>
+          <button type="button" class="select-btn hat-btn" data-hat="cowboy" onclick="selectHat('cowboy', this)">🤠 Cowboy</button>
+          <button type="button" class="select-btn hat-btn" data-hat="beanie" onclick="selectHat('beanie', this)">🧢 Beanie</button>
+          <button type="button" class="select-btn hat-btn" data-hat="wizard" onclick="selectHat('wizard', this)">🧙‍♂️ Wizard</button>
         </div>
       </div>
 
-      <button class="start-btn" id="enterBtn" onclick="enterGame()">Enter Lakefront 🌲</button>
+      <button type="button" class="start-btn" id="enterBtn">Enter Lakefront 🌲</button>
     </div>
   </div>
 
@@ -229,6 +258,10 @@
       <span>🌊</span> Lakefront Wiener Camp
     </div>
     <div style="font-size: 12px; color: #10b981; margin-top: 2px;" id="activeCampers">1 Dachshund Online</div>
+    <div class="voice-status">
+      <div class="mic-dot" id="micIndicator"></div>
+      <span id="voiceStatusText">Voice Chat: Off</span>
+    </div>
   </div>
 
   <div class="hud-controls-hint">
@@ -289,6 +322,42 @@
     animFrame: 0
   };
 
+  // AGORA REALTIME VOICE CHAT INTEGRATION
+  let rtcClient = null;
+  let localAudioTrack = null;
+
+  async function initVoiceChat() {
+    const statusText = document.getElementById('voiceStatusText');
+    const micDot = document.getElementById('micIndicator');
+
+    try {
+      rtcClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+      
+      // Paste your Agora App ID here (testing mode supports null tokens)
+      const appId = "YOUR_AGORA_APP_ID"; 
+      const channelName = "lakefront-camp-voice";
+
+      statusText.innerText = "Connecting Voice...";
+      await rtcClient.join(appId, channelName, null, null);
+
+      localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      await rtcClient.publish([localAudioTrack]);
+
+      micDot.classList.add('active');
+      statusText.innerText = "Voice Chat: Live 🎙️";
+
+      rtcClient.on("user-published", async (user, mediaType) => {
+        await rtcClient.subscribe(user, mediaType);
+        if (mediaType === "audio") {
+          user.audioTrack.play();
+        }
+      });
+    } catch (err) {
+      console.log("Voice chat setup info:", err);
+      statusText.innerText = "Voice Chat: Ready (Mic Permission Req)";
+    }
+  }
+
   function selectBreed(breed, element) {
     dogBreed = breed;
     document.querySelectorAll('.breed-btn').forEach(b => b.classList.remove('selected'));
@@ -305,17 +374,19 @@
     const nameVal = document.getElementById('playerNameInput').value.trim();
     if (nameVal) playerName = nameVal;
     
-    // Complete element removal fix
+    // Connect voice chat upon entering
+    initVoiceChat();
+
     const modal = document.getElementById('startModal');
     if (modal) modal.remove();
     gameStarted = true;
   }
 
+  document.getElementById('enterBtn').addEventListener('click', enterGame);
   document.getElementById('playerNameInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') enterGame();
   });
 
-  // World objects setup
   const logs = [
     { offsetX: 0, offsetY: -60, angle: 0 },
     { offsetX: 60, offsetY: 0, angle: Math.PI / 2 },
@@ -359,7 +430,6 @@
     const cy = canvas.height / 2;
 
     if (!inCabin) {
-      // New Cabin Door location
       const cabinDoorX = cx + 250;
       const cabinDoorY = cy - 110;
       if (Math.hypot(myPlayer.x - cabinDoorX, myPlayer.y - cabinDoorY) < 70) {
@@ -392,7 +462,6 @@
     }
   }
 
-  // Realistic Dachshund Character Drawer
   function drawDachshund(ctx, x, y, name, breed, hat, isSitting, facingRight, isMoving, animTime) {
     ctx.save();
     ctx.translate(x, y);
@@ -407,14 +476,12 @@
       tanColor = '#e29752';   
     }
 
-    // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.beginPath();
     ctx.ellipse(0, 16, 26, 8, 0, 0, Math.PI * 2);
     ctx.fill();
 
     if (!isSitting) {
-      // Tail
       const tailWag = isMoving ? Math.sin(animTime * 12) * 0.35 : Math.sin(animTime * 2) * 0.1;
       ctx.save();
       ctx.translate(-22, -2);
@@ -425,7 +492,6 @@
       ctx.fill();
       ctx.restore();
 
-      // Back Legs
       const legWalk1 = isMoving ? Math.sin(animTime * 10) * 6 : 0;
       const legWalk2 = isMoving ? -Math.sin(animTime * 10) * 6 : 0;
 
@@ -437,19 +503,16 @@
       ctx.fillRect(-16 + legWalk1, 14, 6, 3);
       ctx.fillRect(-8 + legWalk2, 14, 6, 3);
 
-      // Long Body
       ctx.fillStyle = bodyColor;
       ctx.beginPath();
       ctx.roundRect(-22, -8, 44, 18, 9);
       ctx.fill();
 
-      // Chest
       ctx.fillStyle = tanColor;
       ctx.beginPath();
       ctx.ellipse(14, 3, 7, 6, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Front Legs
       ctx.fillStyle = bodyColor;
       ctx.fillRect(8 - legWalk1, 6, 5, 11);
       ctx.fillRect(16 - legWalk2, 6, 5, 11);
@@ -458,7 +521,6 @@
       ctx.fillRect(8 - legWalk1, 14, 6, 3);
       ctx.fillRect(16 - legWalk2, 14, 6, 3);
 
-      // Head
       ctx.fillStyle = bodyColor;
       ctx.beginPath();
       ctx.ellipse(18, -8, 8, 10, -0.2, 0, Math.PI * 2);
@@ -468,7 +530,6 @@
       ctx.arc(22, -14, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      // Snout
       ctx.beginPath();
       ctx.roundRect(22, -18, 16, 9, 4);
       ctx.fill();
@@ -485,11 +546,9 @@
       ctx.fillStyle = '#000000';
       ctx.beginPath(); ctx.arc(24.5, -16, 1.2, 0, Math.PI * 2); ctx.fill();
 
-      // Ear
       ctx.fillStyle = bodyColor;
       ctx.beginPath(); ctx.ellipse(16, -11, 6, 13, 0.2, 0, Math.PI * 2); ctx.fill();
     } else {
-      // Sitting Pose
       ctx.fillStyle = bodyColor;
       ctx.beginPath(); ctx.ellipse(-2, 2, 16, 14, 0, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(4, -14, 10, 0, Math.PI * 2); ctx.fill();
@@ -506,7 +565,6 @@
       ctx.beginPath(); ctx.ellipse(-2, -11, 6, 12, 0.1, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Hats Render
     const headX = isSitting ? 4 : 22;
     const headY = isSitting ? -14 : -14;
 
@@ -524,7 +582,6 @@
 
     ctx.restore();
 
-    // Name Tag
     ctx.save();
     ctx.translate(x, y);
     ctx.fillStyle = '#f59e0b';
@@ -556,27 +613,22 @@
     ctx.restore();
   }
 
-  // BRAND NEW LAKEFRONT CABIN EXTERIOR
   function drawNewCabinExterior(ctx, x, y) {
     ctx.save();
     ctx.translate(x, y);
 
-    // Stone Foundation
     ctx.fillStyle = '#475569';
     ctx.fillRect(-10, 50, 220, 20);
 
-    // Main Log Walls
     ctx.fillStyle = '#451a03';
     ctx.fillRect(0, -90, 200, 140);
 
-    // Horizontal Log Lines
     ctx.strokeStyle = '#27100b';
     ctx.lineWidth = 3;
     for (let ly = -80; ly <= 40; ly += 16) {
       ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(200, ly); ctx.stroke();
     }
 
-    // Sloped Roof
     ctx.fillStyle = '#1e293b';
     ctx.beginPath();
     ctx.moveTo(-20, -90);
@@ -585,14 +637,12 @@
     ctx.closePath();
     ctx.fill();
 
-    // Front Porch Platform
     ctx.fillStyle = '#78350f';
     ctx.fillRect(20, 10, 160, 40);
     ctx.strokeStyle = '#451a03';
     ctx.lineWidth = 2;
     ctx.strokeRect(20, 10, 160, 40);
 
-    // Porch Railing
     ctx.strokeStyle = '#9a3412';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -600,6 +650,197 @@
     ctx.moveTo(135, 15); ctx.lineTo(180, 15);
     ctx.stroke();
 
-    // Double Glass Entrance Door
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(7
+    ctx.fillRect(70, -30, 60, 70);
+    ctx.fillStyle = '#fef08a';
+    ctx.fillRect(75, -25, 22, 30);
+    ctx.fillRect(103, -25, 22, 30);
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath(); ctx.arc(50, -20, 6, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('ENTER CABIN (E)', 50, -45);
+
+    ctx.restore();
+  }
+
+  function drawNewCabinInterior(ctx, cx, cy) {
+    const w = 880;
+    const h = 560;
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+
+    ctx.fillStyle = '#1e1b18';
+    ctx.fillRect(x, y, w, h);
+
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(x, y + 280, w, h - 280);
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 2;
+    for (let fy = y + 310; fy < y + h; fy += 30) {
+      ctx.beginPath(); ctx.moveTo(x, fy); ctx.lineTo(x + w, fy); ctx.stroke();
+    }
+
+    const winX = cx - 220;
+    const winY = y + 80;
+    ctx.fillStyle = '#0284c7';
+    ctx.fillRect(winX, winY, 440, 160);
+    ctx.fillStyle = '#0369a1';
+    ctx.fillRect(winX, winY + 90, 440, 70);
+
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(winX, winY, 440, 160);
+
+    ctx.fillStyle = '#1e40af';
+    ctx.fillRect(cx - 160, cy + 80, 320, 120);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(cx - 140, cy + 95, 280, 90);
+
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(x + 40, y + 180, 120, 180);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 60, y + 250, 80, 90);
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath(); ctx.arc(x + 100, y + 300, 20, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(x + w - 140, y + 140, 100, 220);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(x + w - 130, y + 160, 25, 45);
+    ctx.fillStyle = '#10b981'; ctx.fillRect(x + w - 100, y + 165, 20, 40);
+    ctx.fillStyle = '#f59e0b'; ctx.fillRect(x + w - 130, y + 230, 60, 35);
+
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(cx - 80, cy + 90, 160, 80);
+
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(cx - 40, y + h - 35, 80, 35);
+    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('EXIT (E)', cx - 22, y + h - 12);
+  }
+
+  const remotePlayers = {};
+  if (db) {
+    db.ref('players').on('value', (snapshot) => {
+      const data = snapshot.val() || {};
+      const count = Object.keys(data).length;
+      document.getElementById('activeCampers').innerText = count + (count === 1 ? ' Dachshund Online' : ' Dachshunds Online');
+
+      Object.keys(data).forEach(id => {
+        if (id === playerId) return;
+        remotePlayers[id] = data[id];
+      });
+      Object.keys(remotePlayers).forEach(id => {
+        if (!data[id]) delete remotePlayers[id];
+      });
+    });
+  }
+
+  let globalTime = 0;
+  function gameLoop() {
+    globalTime += 0.05;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    let isMoving = false;
+    if (gameStarted && !myPlayer.isSitting) {
+      if (keys['w'] || keys['arrowup']) { myPlayer.y -= myPlayer.speed; isMoving = true; }
+      if (keys['s'] || keys['arrowdown']) { myPlayer.y += myPlayer.speed; isMoving = true; }
+      if (keys['a'] || keys['arrowleft']) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; isMoving = true; }
+      if (keys['d'] || keys['arrowright']) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; isMoving = true; }
+
+      if (playerRef) {
+        playerRef.set({
+          x: myPlayer.x,
+          y: myPlayer.y,
+          name: playerName,
+          breed: dogBreed,
+          hat: playerHat,
+          isSitting: myPlayer.isSitting,
+          inCabin: inCabin,
+          facing: myPlayer.facing,
+          isMoving: isMoving
+        }).catch(e => {});
+      }
+    }
+
+    const camX = cx - myPlayer.x;
+    const camY = cy - myPlayer.y;
+
+    ctx.save();
+    ctx.translate(camX, camY);
+
+    if (!inCabin) {
+      ctx.fillStyle = '#0369a1';
+      ctx.beginPath();
+      ctx.ellipse(cx - 500, cy + 100, 350, 500, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 5; i++) {
+        const rx = cx - 500 + Math.sin(globalTime + i) * 30;
+        const ry = cy - 100 + i * 90;
+        ctx.beginPath(); ctx.arc(rx, ry, 40, 0, Math.PI); ctx.stroke();
+      }
+
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(cx - 320, cy + 80, 140, 40);
+
+      ctx.fillStyle = '#64748b';
+      for (let px = cx - 180; px < cx + 250; px += 35) {
+        ctx.beginPath(); ctx.arc(px, cy + 100, 12, 0, Math.PI * 2); ctx.fill();
+      }
+
+      trees.forEach(t => drawTree(ctx, t.x + cx, t.y + cy, t.scale));
+
+      drawNewCabinExterior(ctx, cx + 180, cy - 100);
+
+      logs.forEach(log => {
+        ctx.save();
+        ctx.translate(cx + log.offsetX, cy + log.offsetY);
+        ctx.rotate(log.angle);
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-30, -10, 60, 20);
+        ctx.restore();
+      });
+
+      const glow = ctx.createRadialGradient(cx, cy, 5, cx, cy, 75);
+      glow.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
+      glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(cx, cy, 75, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath(); ctx.arc(cx, cy, 14 + Math.sin(globalTime * 3) * 3, 0, Math.PI * 2); ctx.fill();
+
+      fireflies.forEach(f => {
+        f.x += f.speedX;
+        f.y += f.speedY;
+        const alpha = 0.3 + Math.sin(globalTime * 3 + f.phase) * 0.4;
+        ctx.fillStyle = `rgba(254, 240, 138, ${Math.max(0, alpha)})`;
+        ctx.beginPath(); ctx.arc(f.x + cx, f.y + cy, 2, 0, Math.PI * 2); ctx.fill();
+      });
+    } else {
+      drawNewCabinInterior(ctx, cx, cy);
+    }
+
+    Object.keys(remotePlayers).forEach(id => {
+      const p = remotePlayers[id];
+      if (!!p.inCabin === inCabin) {
+        drawDachshund(ctx, p.x, p.y, p.name || 'Dachshund', p.breed || 'black_tan', p.hat || 'none', p.isSitting, p.facing === 'right', p.isMoving, globalTime);
+      }
+    });
+
+    drawDachshund(ctx, myPlayer.x, myPlayer.y, playerName, dogBreed, playerHat, myPlayer.isSitting, myPlayer.facing === 'right', isMoving, globalTime);
+
+    ctx.restore();
+    requestAnimationFrame(gameLoop);
+  }
+
+  gameLoop();
+</script>
+</body>
+</html>
