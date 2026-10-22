@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wiener Dog Camp RPG</title>
+  <title>Wiener Dog Camp - New Lakefront Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -189,8 +189,8 @@
   <!-- Start Screen Modal -->
   <div id="startModal">
     <div class="modal-card">
-      <h1>🌭 Wiener Dog Camp 🌭</h1>
-      <p>Customize your dachshund and explore the woods!</p>
+      <h1>🌭 Lakefront Camp 🌭</h1>
+      <p>Customize your dachshund & explore the lakefront!</p>
       
       <div class="form-group">
         <label class="form-label">Dog Name:</label>
@@ -219,20 +219,20 @@
         </div>
       </div>
 
-      <button class="start-btn" id="enterBtn" onclick="enterGame()">Enter the Woods 🌲</button>
+      <button class="start-btn" id="enterBtn" onclick="enterGame()">Enter Lakefront 🌲</button>
     </div>
   </div>
 
   <!-- HUD Overlay -->
   <div class="hud-top">
     <div style="font-weight: 800; color: #f59e0b; font-size: 15px; display: flex; align-items: center; gap: 6px;">
-      <span>🌭</span> Wiener Dog RPG
+      <span>🌊</span> Lakefront Wiener Camp
     </div>
     <div style="font-size: 12px; color: #10b981; margin-top: 2px;" id="activeCampers">1 Dachshund Online</div>
   </div>
 
   <div class="hud-controls-hint">
-    Move: <b>WASD / Arrows</b> • Hop on Log / Cabin Door: <b>Press E</b>
+    Move: <b>WASD / Arrows</b> • Hop on Log / Enter Door: <b>Press E</b>
   </div>
 
   <canvas id="gameCanvas"></canvas>
@@ -281,8 +281,8 @@
   }
 
   const myPlayer = {
-    x: window.innerWidth / 2 + 100,
-    y: window.innerHeight / 2 + 50,
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2 + 80,
     speed: 3.8,
     isSitting: false,
     facing: 'right',
@@ -324,16 +324,16 @@
   ];
 
   const trees = [];
-  for (let i = 0; i < 35; i++) {
+  for (let i = 0; i < 40; i++) {
     trees.push({
-      x: (Math.random() * 1.8 - 0.4) * 2200,
-      y: (Math.random() * 1.8 - 0.4) * 2200,
+      x: (Math.random() * 2 - 0.5) * 2200,
+      y: (Math.random() * 2 - 0.5) * 2200,
       scale: Math.random() * 0.4 + 0.8
     });
   }
 
   const fireflies = [];
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 30; i++) {
     fireflies.push({
       x: Math.random() * 2000 - 1000,
       y: Math.random() * 2000 - 1000,
@@ -359,9 +359,10 @@
     const cy = canvas.height / 2;
 
     if (!inCabin) {
-      const cabinDoorX = cx + 200;
-      const cabinDoorY = cy - 120;
-      if (Math.hypot(myPlayer.x - cabinDoorX, myPlayer.y - cabinDoorY) < 65) {
+      // New Cabin Door location
+      const cabinDoorX = cx + 250;
+      const cabinDoorY = cy - 110;
+      if (Math.hypot(myPlayer.x - cabinDoorX, myPlayer.y - cabinDoorY) < 70) {
         inCabin = true;
         myPlayer.x = cx;
         myPlayer.y = cy + 180;
@@ -385,8 +386,8 @@
     } else {
       if (myPlayer.y > cy + 200) {
         inCabin = false;
-        myPlayer.x = cx + 200;
-        myPlayer.y = cy - 85;
+        myPlayer.x = cx + 250;
+        myPlayer.y = cy - 70;
       }
     }
   }
@@ -399,12 +400,11 @@
     const scale = 1.1;
     ctx.scale(facingRight ? scale : -scale, scale);
 
-    // Color Scheme Config
-    let bodyColor = '#1e1b18'; // Black
-    let tanColor = '#c27838';  // Tan Accents
+    let bodyColor = '#1e1b18'; 
+    let tanColor = '#c27838';  
     if (breed === 'red_tan') {
-      bodyColor = '#a84c24';  // Deep Red/Tan
-      tanColor = '#e29752';   // Light Tan
+      bodyColor = '#a84c24';  
+      tanColor = '#e29752';   
     }
 
     // Shadow
@@ -414,7 +414,7 @@
     ctx.fill();
 
     if (!isSitting) {
-      // Tail (Animated wag when moving)
+      // Tail
       const tailWag = isMoving ? Math.sin(animTime * 12) * 0.35 : Math.sin(animTime * 2) * 0.1;
       ctx.save();
       ctx.translate(-22, -2);
@@ -433,18 +433,17 @@
       ctx.fillRect(-16 + legWalk1, 6, 5, 11);
       ctx.fillRect(-8 + legWalk2, 6, 5, 11);
 
-      // Paws (Tan accents)
       ctx.fillStyle = tanColor;
       ctx.fillRect(-16 + legWalk1, 14, 6, 3);
       ctx.fillRect(-8 + legWalk2, 14, 6, 3);
 
-      // Long Sausage Body
+      // Long Body
       ctx.fillStyle = bodyColor;
       ctx.beginPath();
       ctx.roundRect(-22, -8, 44, 18, 9);
       ctx.fill();
 
-      // Chest Tan Accent
+      // Chest
       ctx.fillStyle = tanColor;
       ctx.beginPath();
       ctx.ellipse(14, 3, 7, 6, 0, 0, Math.PI * 2);
@@ -459,64 +458,42 @@
       ctx.fillRect(8 - legWalk1, 14, 6, 3);
       ctx.fillRect(16 - legWalk2, 14, 6, 3);
 
-      // Neck & Head
+      // Head
       ctx.fillStyle = bodyColor;
       ctx.beginPath();
       ctx.ellipse(18, -8, 8, 10, -0.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Head Base
       ctx.beginPath();
       ctx.arc(22, -14, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      // Long Snout
+      // Snout
       ctx.beginPath();
       ctx.roundRect(22, -18, 16, 9, 4);
       ctx.fill();
 
-      // Tan Snout Highlight & Eyebrows
       ctx.fillStyle = tanColor;
-      ctx.fillRect(26, -14, 10, 5); // Snout tan
-      ctx.beginPath();
-      ctx.arc(21, -19, 2, 0, Math.PI * 2); // Eyebrow dot
-      ctx.fill();
+      ctx.fillRect(26, -14, 10, 5); 
+      ctx.beginPath(); ctx.arc(21, -19, 2, 0, Math.PI * 2); ctx.fill();
 
-      // Nose
       ctx.fillStyle = '#0f0f10';
-      ctx.beginPath();
-      ctx.arc(37, -15, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(37, -15, 2.5, 0, Math.PI * 2); ctx.fill();
 
-      // Eye
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(24, -16, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(24, -16, 2.5, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(24.5, -16, 1.2, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(24.5, -16, 1.2, 0, Math.PI * 2); ctx.fill();
 
-      // Long Floppy Ear
+      // Ear
       ctx.fillStyle = bodyColor;
-      ctx.beginPath();
-      ctx.ellipse(16, -11, 6, 13, 0.2, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(16, -11, 6, 13, 0.2, 0, Math.PI * 2); ctx.fill();
     } else {
       // Sitting Pose
       ctx.fillStyle = bodyColor;
-      ctx.beginPath();
-      ctx.ellipse(-2, 2, 16, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(4, -14, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.roundRect(4, -18, 15, 8, 4);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-2, 2, 16, 14, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(4, -14, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(4, -18, 15, 8, 4); ctx.fill();
 
       ctx.fillStyle = tanColor;
       ctx.fillRect(8, -14, 9, 4);
@@ -526,9 +503,7 @@
       ctx.beginPath(); ctx.arc(19, -15, 2.5, 0, Math.PI * 2); ctx.fill();
 
       ctx.fillStyle = bodyColor;
-      ctx.beginPath();
-      ctx.ellipse(-2, -11, 6, 12, 0.1, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-2, -11, 6, 12, 0.1, 0, Math.PI * 2); ctx.fill();
     }
 
     // Hats Render
@@ -537,37 +512,25 @@
 
     if (hat === 'cowboy') {
       ctx.fillStyle = '#b45309';
-      ctx.beginPath();
-      ctx.ellipse(headX - 2, headY - 8, 14, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(headX - 2, headY - 8, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillRect(headX - 8, headY - 16, 12, 9);
     } else if (hat === 'beanie') {
       ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(headX - 2, headY - 6, 8, Math.PI, 0, false);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(headX - 2, headY - 6, 8, Math.PI, 0, false); ctx.fill();
     } else if (hat === 'wizard') {
       ctx.fillStyle = '#8b5cf6';
-      ctx.beginPath();
-      ctx.moveTo(headX - 2, headY - 24);
-      ctx.lineTo(headX - 12, headY - 6);
-      ctx.lineTo(headX + 8, headY - 6);
-      ctx.closePath();
-      ctx.fill();
+      ctx.beginPath(); ctx.moveTo(headX - 2, headY - 24); ctx.lineTo(headX - 12, headY - 6); ctx.lineTo(headX + 8, headY - 6); ctx.closePath(); ctx.fill();
     }
 
     ctx.restore();
 
-    // Name Tag Overlay (Unflipped text)
+    // Name Tag
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = 'rgba(17, 24, 39, 0.9)';
+    ctx.fillStyle = '#f59e0b';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    const tagY = isSitting ? -36 : -32;
-    
-    ctx.fillStyle = '#f59e0b';
-    ctx.fillText(name, 0, tagY);
+    ctx.fillText(name, 0, isSitting ? -36 : -32);
     ctx.restore();
   }
 
@@ -577,12 +540,9 @@
     ctx.scale(scale, scale);
 
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(0, 25, 20, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 25, 20, 8, 0, 0, Math.PI * 2); ctx.fill();
 
-    ctx.fillStyle = '#3d2817';
-    ctx.fillRect(-5, 10, 10, 22);
+    ctx.fillStyle = '#3d2817'; ctx.fillRect(-5, 10, 10, 22);
 
     ctx.fillStyle = '#064e3b';
     ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(-30, 15); ctx.lineTo(30, 15); ctx.fill();
@@ -596,247 +556,50 @@
     ctx.restore();
   }
 
-  function drawCabinInteriorDetailed(ctx, cx, cy) {
-    const w = 900;
-    const h = 580;
-    const x = cx - w / 2;
-    const y = cy - h / 2;
+  // BRAND NEW LAKEFRONT CABIN EXTERIOR
+  function drawNewCabinExterior(ctx, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
 
-    // Teal Back Wall
-    ctx.fillStyle = '#126161';
-    ctx.fillRect(x, y, w, h);
+    // Stone Foundation
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(-10, 50, 220, 20);
 
-    // Vaulted Dark Wooden Roof Rafters
-    ctx.fillStyle = '#3d1c16';
+    // Main Log Walls
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(0, -90, 200, 140);
+
+    // Horizontal Log Lines
+    ctx.strokeStyle = '#27100b';
+    ctx.lineWidth = 3;
+    for (let ly = -80; ly <= 40; ly += 16) {
+      ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(200, ly); ctx.stroke();
+    }
+
+    // Sloped Roof
+    ctx.fillStyle = '#1e293b';
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(cx, y - 80);
-    ctx.lineTo(x + w, y);
-    ctx.lineTo(x + w, y + 90);
-    ctx.lineTo(cx, y + 10);
-    ctx.lineTo(x, y + 90);
+    ctx.moveTo(-20, -90);
+    ctx.lineTo(100, -150);
+    ctx.lineTo(220, -90);
     ctx.closePath();
     ctx.fill();
 
-    // Rafter beams
-    ctx.strokeStyle = '#27100b';
-    ctx.lineWidth = 6;
-    for (let i = 0; i < 6; i++) {
-      const bx = x + (w / 5) * i;
-      ctx.beginPath(); ctx.moveTo(bx, y + 90); ctx.lineTo(cx, y - 80); ctx.stroke();
-    }
-
-    // Wooden Plank Floor
-    ctx.fillStyle = '#e69a53';
-    ctx.fillRect(x, y + 330, w, h - 330);
-
-    ctx.strokeStyle = '#c87c35';
+    // Front Porch Platform
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(20, 10, 160, 40);
+    ctx.strokeStyle = '#451a03';
     ctx.lineWidth = 2;
-    for (let fy = y + 360; fy < y + h; fy += 30) {
-      ctx.beginPath(); ctx.moveTo(x, fy); ctx.lineTo(x + w, fy); ctx.stroke();
-    }
+    ctx.strokeRect(20, 10, 160, 40);
 
-    // Grid Windows
-    const winX = cx - 280;
-    const winY = y + 120;
-    const winW = 560;
-    const winH = 180;
-
-    ctx.fillStyle = '#94d2bd';
-    ctx.fillRect(winX, winY, winW, winH);
-
-    ctx.strokeStyle = '#1e3838';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(winX, winY, winW, winH);
-
+    // Porch Railing
+    ctx.strokeStyle = '#9a3412';
     ctx.lineWidth = 3;
-    for (let wx = winX + 70; wx < winX + winW; wx += 70) {
-      ctx.beginPath(); ctx.moveTo(wx, winY); ctx.lineTo(wx, winY + winH); ctx.stroke();
-    }
-    for (let wy = winY + 45; wy < winY + winH; wy += 45) {
-      ctx.beginPath(); ctx.moveTo(winX, wy); ctx.lineTo(winX + winW, wy); ctx.stroke();
-    }
+    ctx.beginPath();
+    ctx.moveTo(20, 15); ctx.lineTo(65, 15);
+    ctx.moveTo(135, 15); ctx.lineTo(180, 15);
+    ctx.stroke();
 
-    // Books on Ledge
-    ctx.fillStyle = '#b93817'; ctx.fillRect(winX + 10, winY + 140, 45, 35);
-    ctx.fillStyle = '#115e59'; ctx.fillRect(winX + 60, winY + 145, 30, 30);
-    ctx.fillStyle = '#d97706'; ctx.fillRect(winX + 410, winY + 135, 55, 40);
-
-    // Yellow Couch & Black Cat (Left)
-    const couchX = x + 70;
-    const couchY = y + 350;
-    ctx.fillStyle = '#d4ac0d';
-    ctx.fillRect(couchX, couchY, 210, 95);
-    ctx.fillStyle = '#b7950b';
-    ctx.fillRect(couchX + 15, couchY - 30, 180, 40);
-
-    // Sleeping Cat
-    ctx.fillStyle = '#111111';
-    ctx.beginPath(); ctx.ellipse(couchX + 120, couchY + 30, 22, 14, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(couchX + 100, couchY + 26, 10, 0, Math.PI * 2); ctx.fill();
-
-    // Coffee Table & Rug
-    ctx.fillStyle = '#b93817'; ctx.fillRect(couchX + 25, couchY + 100, 200, 75);
-    ctx.fillStyle = '#d97706'; ctx.fillRect(couchX + 35, couchY + 110, 180, 55);
-    ctx.fillStyle = '#22252a'; ctx.fillRect(couchX + 70, couchY + 115, 110, 45);
-
-    // Framed Fish Art
-    ctx.fillStyle = '#b7950b'; ctx.fillRect(x + 80, y + 120, 130, 120);
-    ctx.fillStyle = '#fef08a'; ctx.fillRect(x + 92, y + 132, 106, 96);
-    ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.ellipse(x + 145, y + 180, 32, 20, 0, 0, Math.PI * 2); ctx.fill();
-
-    // Grandfather Clock
-    ctx.fillStyle = '#451a03'; ctx.fillRect(cx - 150, y + 210, 35, 120);
-    ctx.fillStyle = '#fef08a'; ctx.beginPath(); ctx.arc(cx - 132, y + 230, 12, 0, Math.PI * 2); ctx.fill();
-
-    // Round Grey Rug & Armchairs
-    const rigX = cx + 80;
-    const rigY = y + 360;
-    ctx.fillStyle = '#a3a3a3';
-    ctx.beginPath(); ctx.ellipse(rigX + 70, rigY + 60, 160, 90, 0, 0, Math.PI * 2); ctx.fill();
-
-    // Orange Armchair
-    ctx.fillStyle = '#ea580c'; ctx.fillRect(rigX + 40, rigY - 20, 95, 80);
-    // Green Armchair
-    ctx.fillStyle = '#15803d'; ctx.fillRect(rigX - 30, rigY + 50, 85, 70);
-
-    // Fireplace & Chimney
-    const fpX = x + w - 140;
-    const fpY = y + 150;
-    ctx.fillStyle = '#78350f'; ctx.fillRect(fpX, fpY + 120, 110, 160);
-    ctx.fillStyle = '#d4d4d8'; ctx.fillRect(fpX + 20, y + 60, 70, 210);
-    ctx.fillStyle = '#1c1917'; ctx.fillRect(fpX + 25, fpY + 200, 60, 80);
-    ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.arc(fpX + 55, fpY + 255, 16, 0, Math.PI * 2); ctx.fill();
-
-    // Chandelier
-    ctx.strokeStyle = '#eab308'; ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.ellipse(cx + 80, y + 80, 75, 20, 0, 0, Math.PI * 2); ctx.stroke();
-
-    // Exit Door
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(cx - 40, y + h - 35, 80, 35);
-    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('EXIT (E)', cx - 22, y + h - 12);
-  }
-
-  // Sync Remote Campers
-  const remotePlayers = {};
-  if (db) {
-    db.ref('players').on('value', (snapshot) => {
-      const data = snapshot.val() || {};
-      const count = Object.keys(data).length;
-      document.getElementById('activeCampers').innerText = count + (count === 1 ? ' Dachshund Online' : ' Dachshunds Online');
-
-      Object.keys(data).forEach(id => {
-        if (id === playerId) return;
-        remotePlayers[id] = data[id];
-      });
-      Object.keys(remotePlayers).forEach(id => {
-        if (!data[id]) delete remotePlayers[id];
-      });
-    });
-  }
-
-  let globalTime = 0;
-  function gameLoop() {
-    globalTime += 0.05;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-
-    let isMoving = false;
-    if (gameStarted && !myPlayer.isSitting) {
-      if (keys['w'] || keys['arrowup']) { myPlayer.y -= myPlayer.speed; isMoving = true; }
-      if (keys['s'] || keys['arrowdown']) { myPlayer.y += myPlayer.speed; isMoving = true; }
-      if (keys['a'] || keys['arrowleft']) { myPlayer.x -= myPlayer.speed; myPlayer.facing = 'left'; isMoving = true; }
-      if (keys['d'] || keys['arrowright']) { myPlayer.x += myPlayer.speed; myPlayer.facing = 'right'; isMoving = true; }
-
-      if (playerRef) {
-        playerRef.set({
-          x: myPlayer.x,
-          y: myPlayer.y,
-          name: playerName,
-          breed: dogBreed,
-          hat: playerHat,
-          isSitting: myPlayer.isSitting,
-          inCabin: inCabin,
-          facing: myPlayer.facing,
-          isMoving: isMoving
-        }).catch(e => {});
-      }
-    }
-
-    const camX = cx - myPlayer.x;
-    const camY = cy - myPlayer.y;
-
-    ctx.save();
-    ctx.translate(camX, camY);
-
-    if (!inCabin) {
-      // Outdoor Map rendering
-      trees.forEach(t => drawTree(ctx, t.x + cx, t.y + cy, t.scale));
-
-      // Cabin Exterior
-      ctx.fillStyle = '#78350f';
-      ctx.fillRect(cx + 120, cy - 200, 160, 120);
-      ctx.fillStyle = '#451a03';
-      ctx.beginPath();
-      ctx.moveTo(cx + 100, cy - 200); ctx.lineTo(cx + 200, cy - 250); ctx.lineTo(cx + 300, cy - 200); ctx.fill();
-
-      // Door
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(cx + 185, cy - 130, 30, 50);
-      ctx.fillStyle = '#f59e0b';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('DOOR (E)', cx + 180, cy - 140);
-
-      // Campfire Logs
-      logs.forEach(log => {
-        ctx.save();
-        ctx.translate(cx + log.offsetX, cy + log.offsetY);
-        ctx.rotate(log.angle);
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(-30, -10, 60, 20);
-        ctx.restore();
-      });
-
-      // Fire Glow & Flame
-      const glow = ctx.createRadialGradient(cx, cy, 5, cx, cy, 75);
-      glow.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
-      glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
-      ctx.fillStyle = glow;
-      ctx.beginPath(); ctx.arc(cx, cy, 75, 0, Math.PI * 2); ctx.fill();
-
-      ctx.fillStyle = '#f97316';
-      ctx.beginPath(); ctx.arc(cx, cy, 14 + Math.sin(globalTime * 3) * 3, 0, Math.PI * 2); ctx.fill();
-
-      // Ambient Fireflies
-      fireflies.forEach(f => {
-        f.x += f.speedX;
-        f.y += f.speedY;
-        const alpha = 0.3 + Math.sin(globalTime * 3 + f.phase) * 0.4;
-        ctx.fillStyle = `rgba(254, 240, 138, ${Math.max(0, alpha)})`;
-        ctx.beginPath(); ctx.arc(f.x + cx, f.y + cy, 2, 0, Math.PI * 2); ctx.fill();
-      });
-    } else {
-      drawCabinInteriorDetailed(ctx, cx, cy);
-    }
-
-    // Remote Dachshunds
-    Object.keys(remotePlayers).forEach(id => {
-      const p = remotePlayers[id];
-      if (!!p.inCabin === inCabin) {
-        drawDachshund(ctx, p.x, p.y, p.name || 'Dachshund', p.breed || 'black_tan', p.hat || 'none', p.isSitting, p.facing === 'right', p.isMoving, globalTime);
-      }
-    });
-
-    // Local Dachshund
-    drawDachshund(ctx, myPlayer.x, myPlayer.y, playerName, dogBreed, playerHat, myPlayer.isSitting, myPlayer.facing === 'right', isMoving, globalTime);
-
-    ctx.restore();
-    requestAnimationFrame(gameLoop);
-  }
-
-  gameLoop();
-</script>
-</body>
-</html>
+    // Double Glass Entrance Door
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(7
