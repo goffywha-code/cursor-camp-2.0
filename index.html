@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Wiener Dog Camp - PC & Mobile Roblox Chat Edition</title>
+  <title>Wiener Dog Camp - Codes & Mobile Flip Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -22,6 +22,17 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       position: relative;
+    }
+
+    /* Transform wrapper for Mobile Flip feature */
+    #flipWrapper {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: transform 0.4s ease;
+      transform-origin: center center;
     }
 
     /* Start Screen Modal Overlay */
@@ -50,10 +61,12 @@
       border-radius: 20px;
       text-align: center;
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.15);
       position: relative;
       z-index: 100000;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal-card h1 {
@@ -251,7 +264,7 @@
       height: 100vh;
       pointer-events: none;
       z-index: 50;
-      display: none; /* Displayed when mobile mode is active */
+      display: none;
     }
 
     .dpad-container {
@@ -307,7 +320,7 @@
       background: rgba(31, 41, 55, 0.85);
       border: 2px solid rgba(245, 158, 11, 0.6);
       color: #f59e0b;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       display: flex;
       flex-direction: column;
@@ -325,7 +338,28 @@
     }
 
     .action-btn span {
-      font-size: 18px;
+      font-size: 16px;
+    }
+
+    /* Admin Kick Button (Skibidi code) */
+    #adminKickBtn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(239, 68, 68, 0.9);
+      border: 2px solid #fecaca;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      z-index: 60;
+      display: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+    #adminKickBtn:active {
+      transform: scale(0.95);
     }
 
     @keyframes fadeIn {
@@ -346,92 +380,106 @@
 </head>
 <body>
 
-  <!-- Start Screen Modal Overlay -->
-  <div id="startModal">
-    <div class="modal-card">
-      <h1>🌭 Lakefront Camp 🌭</h1>
-      <p>Customize your dachshund & select your controls!</p>
-      
-      <div class="form-group">
-        <label class="form-label">Dog Name:</label>
-        <input type="text" id="playerNameInput" class="modal-input" placeholder="Name your dog..." maxlength="12" value="Mr. Weens">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Select Device Mode:</label>
-        <div class="selection-grid">
-          <button type="button" class="select-btn device-btn selected" data-device="pc" onclick="selectDevice('pc', this)">
-            💻 PC (Keyboard)
-          </button>
-          <button type="button" class="select-btn device-btn" data-device="mobile" onclick="selectDevice('mobile', this)">
-            📱 Mobile (Touch)
-          </button>
+  <!-- Transform wrapper for Mobile Flip feature (wraps everything including HUD and UI) -->
+  <div id="flipWrapper">
+    <!-- Start Screen Modal Overlay -->
+    <div id="startModal">
+      <div class="modal-card">
+        <h1>🌭 Lakefront Camp 🌭</h1>
+        <p>Customize your dachshund & select your controls!</p>
+        
+        <div class="form-group">
+          <label class="form-label">Dog Name:</label>
+          <input type="text" id="playerNameInput" class="modal-input" placeholder="Name your dog..." maxlength="12" value="Mr. Weens">
         </div>
-      </div>
 
-      <div class="form-group">
-        <label class="form-label">Choose Dog Breed Coat:</label>
-        <div class="selection-grid">
-          <button type="button" class="select-btn breed-btn selected" data-breed="black_tan" onclick="selectBreed('black_tan', this)">
-            🐾 Black & Tan
-          </button>
-          <button type="button" class="select-btn breed-btn" data-breed="red_tan" onclick="selectBreed('red_tan', this)">
-            🐕 Red / Tan
-          </button>
+        <div class="form-group">
+          <label class="form-label">Redeem Code:</label>
+          <input type="text" id="codeRedeemInput" class="modal-input" placeholder="Enter code (SONIC1, SKIBIDI, love)..." maxlength="20">
+          <div id="codeFeedback" style="font-size: 11px; color: #10b981; margin-top: 4px; text-align: center; min-height: 16px;"></div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label class="form-label">Choose Hat:</label>
-        <div class="selection-grid hat-grid">
-          <button type="button" class="select-btn hat-btn selected" data-hat="none" onclick="selectHat('none', this)">None</button>
-          <button type="button" class="select-btn hat-btn" data-hat="cowboy" onclick="selectHat('cowboy', this)">🤠 Cowboy</button>
-          <button type="button" class="select-btn hat-btn" data-hat="beanie" onclick="selectHat('beanie', this)">🧢 Beanie</button>
-          <button type="button" class="select-btn hat-btn" data-hat="wizard" onclick="selectHat('wizard', this)">🧙‍♂️ Wizard</button>
+        <div class="form-group">
+          <label class="form-label">Select Device Mode:</label>
+          <div class="selection-grid">
+            <button type="button" class="select-btn device-btn selected" data-device="pc" onclick="selectDevice('pc', this)">
+              💻 PC (Keyboard)
+            </button>
+            <button type="button" class="select-btn device-btn" data-device="mobile" onclick="selectDevice('mobile', this)">
+              📱 Mobile (Touch)
+            </button>
+          </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Choose Dog Breed Coat:</label>
+          <div class="selection-grid">
+            <button type="button" class="select-btn breed-btn selected" data-breed="black_tan" onclick="selectBreed('black_tan', this)">
+              🐾 Black & Tan
+            </button>
+            <button type="button" class="select-btn breed-btn" data-breed="red_tan" onclick="selectBreed('red_tan', this)">
+              🐕 Red / Tan
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Choose Hat:</label>
+          <div class="selection-grid hat-grid">
+            <button type="button" class="select-btn hat-btn selected" data-hat="none" onclick="selectHat('none', this)">None</button>
+            <button type="button" class="select-btn hat-btn" data-hat="cowboy" onclick="selectHat('cowboy', this)">🤠 Cowboy</button>
+            <button type="button" class="select-btn hat-btn" data-hat="beanie" onclick="selectHat('beanie', this)">🧢 Beanie</button>
+            <button type="button" class="select-btn hat-btn" data-hat="wizard" onclick="selectHat('wizard', this)">🧙‍♂️ Wizard</button>
+          </div>
+        </div>
+
+        <button type="button" class="start-btn" id="enterBtn">Enter Lakefront 🌲</button>
       </div>
-
-      <button type="button" class="start-btn" id="enterBtn">Enter Lakefront 🌲</button>
     </div>
-  </div>
 
-  <!-- HUD Overlay -->
-  <div class="hud-top">
-    <div style="font-weight: 800; color: #f59e0b; font-size: 15px; display: flex; align-items: center; gap: 6px;">
-      <span>🌊</span> Lakefront Wiener Camp
+    <!-- HUD Overlay -->
+    <div class="hud-top">
+      <div style="font-weight: 800; color: #f59e0b; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+        <span>🌊</span> Lakefront Wiener Camp
+      </div>
+      <div style="font-size: 12px; color: #10b981; margin-top: 2px;" id="activeCampers">1 Dachshund Online</div>
     </div>
-    <div style="font-size: 12px; color: #10b981; margin-top: 2px;" id="activeCampers">1 Dachshund Online</div>
-  </div>
 
-  <div class="hud-controls-hint" id="hudHint">
-    Move: <b>WASD / Arrows</b> • Chat: Press <b>/</b> • Cabin/Log: <b>Press E</b>
-  </div>
+    <button id="adminKickBtn" onclick="triggerServerKick()">⚡ KICK ALL</button>
 
-  <!-- Roblox-style Chat Overlay -->
-  <div id="chatContainer">
-    <div id="chatLog"></div>
-    <input type="text" id="chatInputBox" placeholder="Press '/' to chat, 'Enter' to send..." maxlength="80">
-  </div>
-
-  <!-- Mobile On-Screen Touch Controls -->
-  <div id="mobileHUD">
-    <div class="dpad-container">
-      <div class="dpad-btn dpad-up" id="btnUp">▲</div>
-      <div class="dpad-btn dpad-left" id="btnLeft">◄</div>
-      <div class="dpad-btn dpad-right" id="btnRight">►</div>
-      <div class="dpad-btn dpad-down" id="btnDown">▼</div>
+    <div class="hud-controls-hint" id="hudHint">
+      Move: <b>WASD / Arrows</b> • Chat: Press <b>/</b> • Cabin/Log: <b>Press E</b>
     </div>
-    <div class="action-buttons">
-      <button type="button" class="action-btn" id="btnChat">
-        <span>💬</span> CHAT
-      </button>
-      <button type="button" class="action-btn" id="btnInteract">
-        <span>🐾</span> USE
-      </button>
-    </div>
-  </div>
 
-  <canvas id="gameCanvas"></canvas>
+    <!-- Roblox-style Chat Overlay -->
+    <div id="chatContainer">
+      <div id="chatLog"></div>
+      <input type="text" id="chatInputBox" placeholder="Press '/' to chat, 'Enter' to send..." maxlength="80">
+    </div>
+
+    <!-- Mobile On-Screen Touch Controls -->
+    <div id="mobileHUD">
+      <div class="dpad-container">
+        <div class="dpad-btn dpad-up" id="btnUp">▲</div>
+        <div class="dpad-btn dpad-left" id="btnLeft">◄</div>
+        <div class="dpad-btn dpad-right" id="btnRight">►</div>
+        <div class="dpad-btn dpad-down" id="btnDown">▼</div>
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="action-btn" id="btnFlip">
+          <span>🔄</span> FLIP
+        </button>
+        <button type="button" class="action-btn" id="btnChat">
+          <span>💬</span> CHAT
+        </button>
+        <button type="button" class="action-btn" id="btnInteract">
+          <span>🐾</span> USE
+        </button>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+  </div>
 
 <script>
   let db = null;
@@ -468,13 +516,29 @@
   let playerName = "Mr. Weens";
   let dogBreed = "black_tan";
   let playerHat = "none";
-  let inCabin = false;
+  let isSonic = false;
+  let hasLovePower = false;
+  let hasAdminKick = false;
+  let screenFlipped = false;
+
   const playerId = 'player_' + Math.random().toString(36).substr(2, 9);
   let playerRef = null;
 
   if (db) {
     playerRef = db.ref('players/' + playerId);
     playerRef.onDisconnect().remove();
+
+    // Listen for global server kicks (Skibidi code)
+    db.ref('serverCommand/kickSignal').on('value', (snap) => {
+      const val = snap.val();
+      if (val && val > Date.now() - 3000) {
+        // We received kick signal! Check if we are admin
+        if (!hasAdminKick) {
+          alert("The server was cleared by Skibidi admin! Restarting...");
+          window.location.reload();
+        }
+      }
+    });
   }
 
   const myPlayer = {
@@ -506,16 +570,68 @@
     element.classList.add('selected');
   }
 
+  // Handle Code Redemption on Start Screen
+  const codeInput = document.getElementById('codeRedeemInput');
+  const codeFeedback = document.getElementById('codeFeedback');
+
+  codeInput.addEventListener('input', () => {
+    const code = codeInput.value.trim().toUpperCase();
+    isSonic = false;
+    hasLovePower = false;
+    hasAdminKick = false;
+    document.getElementById('adminKickBtn').style.display = 'none';
+
+    if (code === 'SONIC1') {
+      isSonic = true;
+      myPlayer.speed = 7.2;
+      codeFeedback.style.color = '#38bdf8';
+      codeFeedback.innerText = '⚡ SONIC1 Code Redeemed! Super Speed & Blue Avatar!';
+    } else if (code === 'SKIBIDI') {
+      hasAdminKick = true;
+      codeFeedback.style.color = '#ef4444';
+      codeFeedback.innerText = '🚽 SKIBIDI Code Redeemed! Admin Kick Unlocked!';
+      if (deviceMode === 'mobile') {
+        document.getElementById('adminKickBtn').style.display = 'block';
+      }
+    } else if (code === 'LOVE') {
+      hasLovePower = true;
+      codeFeedback.style.color = '#f43f5e';
+      codeFeedback.innerText = '💖 LOVE Code Redeemed! Pulsing Hearts Active!';
+    } else if (code !== '') {
+      codeFeedback.style.color = '#9ca3af';
+      codeFeedback.innerText = '❌ Invalid Code';
+    } else {
+      codeFeedback.innerText = '';
+    }
+  });
+
+  function triggerServerKick() {
+    if (hasAdminKick && db) {
+      db.ref('serverCommand/kickSignal').set(Date.now());
+    }
+  }
+
+  function toggleScreenFlip() {
+    screenFlipped = !screenFlipped;
+    const wrapper = document.getElementById('flipWrapper');
+    if (screenFlipped) {
+      wrapper.style.transform = 'rotate(180deg)';
+    } else {
+      wrapper.style.transform = 'rotate(0deg)';
+    }
+  }
+
   function enterGame() {
     const nameVal = document.getElementById('playerNameInput').value.trim();
     if (nameVal) playerName = nameVal;
 
-    // Set UI for selected device mode
     if (deviceMode === 'mobile') {
       document.getElementById('mobileHUD').style.display = 'block';
       document.getElementById('hudHint').innerText = "Use D-Pad to move • Tap USE to interact/sit";
-      // Adjust chat box position so touch buttons don't block it
       document.getElementById('chatContainer').style.bottom = '175px';
+      if (hasAdminKick) {
+        document.getElementById('adminKickBtn').style.display = 'block';
+      }
     } else {
       document.getElementById('mobileHUD').style.display = 'none';
       document.getElementById('hudHint').innerHTML = "Move: <b>WASD / Arrows</b> • Chat: Press <b>/</b> • Cabin/Log: <b>Press E</b>";
@@ -531,7 +647,6 @@
     if (e.key === 'Enter') enterGame();
   });
 
-  // Automatically select Mobile mode if touch screen detected
   if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
     const mobileBtn = document.querySelector('.device-btn[data-device="mobile"]');
     if (mobileBtn) selectDevice('mobile', mobileBtn);
@@ -620,9 +735,9 @@
     keys[e.key.toLowerCase()] = false;
   });
 
-  // Mobile Touch Event Handlers
   function bindTouchBtn(btnId, keyName) {
     const btn = document.getElementById(btnId);
+    if (!btn) return;
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       mobileKeys[keyName] = true;
@@ -640,23 +755,20 @@
   bindTouchBtn('btnLeft', 'left');
   bindTouchBtn('btnRight', 'right');
 
-  document.getElementById('btnInteract').addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    handleInteract();
-  });
-  document.getElementById('btnInteract').addEventListener('click', handleInteract);
+  const interactBtn = document.getElementById('btnInteract');
+  interactBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleInteract(); });
+  interactBtn.addEventListener('click', handleInteract);
 
-  document.getElementById('btnChat').addEventListener('touchstart', (e) => {
+  const chatBtn = document.getElementById('btnChat');
+  chatBtn.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    if (isChatting) {
-      sendChatMessage();
-    } else {
-      openChat();
-    }
+    if (isChatting) { sendChatMessage(); } else { openChat(); }
   });
-  document.getElementById('btnChat').addEventListener('click', () => {
-    if (!isChatting) openChat();
-  });
+  chatBtn.addEventListener('click', () => { if (!isChatting) openChat(); });
+
+  const flipBtn = document.getElementById('btnFlip');
+  flipBtn.addEventListener('touchstart', (e) => { e.preventDefault(); toggleScreenFlip(); });
+  flipBtn.addEventListener('click', toggleScreenFlip);
 
   const logs = [
     { offsetX: 0, offsetY: -60, angle: 0 },
@@ -684,6 +796,8 @@
       phase: Math.random() * Math.PI * 2
     });
   }
+
+  let inCabin = false;
 
   function handleInteract() {
     const cx = canvas.width / 2;
@@ -722,7 +836,7 @@
     }
   }
 
-  function drawDachshund(ctx, x, y, name, breed, hat, isSitting, facingRight, isMoving, animTime, chatMessage) {
+  function drawDachshund(ctx, x, y, name, breed, hat, isSitting, facingRight, isMoving, animTime, chatMessage, sonicOn, loveOn) {
     ctx.save();
     ctx.translate(x, y);
 
@@ -731,7 +845,10 @@
 
     let bodyColor = '#1e1b18'; 
     let tanColor = '#c27838';  
-    if (breed === 'red_tan') {
+    if (sonicOn) {
+      bodyColor = '#1d4ed8'; // Sonic Blue
+      tanColor = '#fde047';  // Sonic Gold shoes/accents
+    } else if (breed === 'red_tan') {
       bodyColor = '#a84c24';  
       tanColor = '#e29752';   
     }
@@ -759,7 +876,7 @@
       ctx.fillRect(-16 + legWalk1, 6, 5, 11);
       ctx.fillRect(-8 + legWalk2, 6, 5, 11);
 
-      ctx.fillStyle = tanColor;
+      ctx.fillStyle = sonicOn ? '#ef4444' : tanColor; // Red sonic shoes
       ctx.fillRect(-16 + legWalk1, 14, 6, 3);
       ctx.fillRect(-8 + legWalk2, 14, 6, 3);
 
@@ -777,7 +894,7 @@
       ctx.fillRect(8 - legWalk1, 6, 5, 11);
       ctx.fillRect(16 - legWalk2, 6, 5, 11);
 
-      ctx.fillStyle = tanColor;
+      ctx.fillStyle = sonicOn ? '#ef4444' : tanColor;
       ctx.fillRect(8 - legWalk1, 14, 6, 3);
       ctx.fillRect(16 - legWalk2, 14, 6, 3);
 
@@ -798,13 +915,20 @@
       ctx.fillRect(26, -14, 10, 5); 
       ctx.beginPath(); ctx.arc(21, -19, 2, 0, Math.PI * 2); ctx.fill();
 
-      ctx.fillStyle = '#0f0f10';
-      ctx.beginPath(); ctx.arc(37, -15, 2.5, 0, Math.PI * 2); ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(24, -16, 2.5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#000000';
-      ctx.beginPath(); ctx.arc(24.5, -16, 1.2, 0, Math.PI * 2); ctx.fill();
+      // Eyes (Heart pulsing if loveOn)
+      if (loveOn) {
+        ctx.fillStyle = '#f43f5e';
+        const heartPulse = 3 + Math.sin(animTime * 10) * 1.2;
+        ctx.beginPath(); ctx.arc(37, -15, heartPulse, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(24, -16, heartPulse, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.fillStyle = '#0f0f10';
+        ctx.beginPath(); ctx.arc(37, -15, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(24, -16, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath(); ctx.arc(24.5, -16, 1.2, 0, Math.PI * 2); ctx.fill();
+      }
 
       ctx.fillStyle = bodyColor;
       ctx.beginPath(); ctx.ellipse(16, -11, 6, 13, 0.2, 0, Math.PI * 2); ctx.fill();
@@ -818,8 +942,8 @@
       ctx.fillRect(8, -14, 9, 4);
       ctx.beginPath(); ctx.arc(3, -19, 2, 0, Math.PI * 2); ctx.fill();
 
-      ctx.fillStyle = '#000000';
-      ctx.beginPath(); ctx.arc(19, -15, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = loveOn ? '#f43f5e' : '#000000';
+      ctx.beginPath(); ctx.arc(19, -15, loveOn ? 4 : 2.5, 0, Math.PI * 2); ctx.fill();
 
       ctx.fillStyle = bodyColor;
       ctx.beginPath(); ctx.ellipse(-2, -11, 6, 12, 0.1, 0, Math.PI * 2); ctx.fill();
@@ -828,7 +952,12 @@
     const headX = isSitting ? 4 : 22;
     const headY = isSitting ? -14 : -14;
 
-    if (hat === 'cowboy') {
+    if (sonicOn) {
+      // Sonic Spikes on head
+      ctx.fillStyle = '#1d4ed8';
+      ctx.beginPath(); ctx.moveTo(headX - 6, headY - 10); ctx.lineTo(headX - 18, headY - 4); ctx.lineTo(headX - 6, headY + 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(headX - 4, headY - 14); ctx.lineTo(headX - 16, headY - 10); ctx.lineTo(headX - 4, headY - 4); ctx.fill();
+    } else if (hat === 'cowboy') {
       ctx.fillStyle = '#b45309';
       ctx.beginPath(); ctx.ellipse(headX - 2, headY - 8, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillRect(headX - 8, headY - 16, 12, 9);
@@ -838,6 +967,18 @@
     } else if (hat === 'wizard') {
       ctx.fillStyle = '#8b5cf6';
       ctx.beginPath(); ctx.moveTo(headX - 2, headY - 24); ctx.lineTo(headX - 12, headY - 6); ctx.lineTo(headX + 8, headY - 6); ctx.closePath(); ctx.fill();
+    }
+
+    // Love Heart on Chest if loveOn active
+    if (loveOn) {
+      ctx.save();
+      const pulseSize = 8 + Math.sin(animTime * 10) * 3;
+      ctx.translate(0, 0);
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
 
     ctx.restore();
@@ -1052,6 +1193,8 @@
         name: playerName,
         breed: dogBreed,
         hat: playerHat,
+        sonic: isSonic,
+        love: hasLovePower,
         isSitting: myPlayer.isSitting,
         inCabin: inCabin,
         facing: myPlayer.facing,
@@ -1124,11 +1267,11 @@
     Object.keys(remotePlayers).forEach(id => {
       const p = remotePlayers[id];
       if (!!p.inCabin === inCabin) {
-        drawDachshund(ctx, p.x, p.y, p.name || 'Dachshund', p.breed || 'black_tan', p.hat || 'none', p.isSitting, p.facing === 'right', p.isMoving, globalTime, p.msg);
+        drawDachshund(ctx, p.x, p.y, p.name || 'Dachshund', p.breed || 'black_tan', p.hat || 'none', p.isSitting, p.facing === 'right', p.isMoving, globalTime, p.msg, p.sonic, p.love);
       }
     });
 
-    drawDachshund(ctx, myPlayer.x, myPlayer.y, playerName, dogBreed, playerHat, myPlayer.isSitting, myPlayer.facing === 'right', isMoving, globalTime, myPlayer.currentMsg);
+    drawDachshund(ctx, myPlayer.x, myPlayer.y, playerName, dogBreed, playerHat, myPlayer.isSitting, myPlayer.facing === 'right', isMoving, globalTime, myPlayer.currentMsg, isSonic, hasLovePower);
 
     ctx.restore();
     requestAnimationFrame(gameLoop);
